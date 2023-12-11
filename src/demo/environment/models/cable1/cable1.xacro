@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name= "cable1" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="cable1">
+    <link name="cable1">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>  <!-- can be modified to change position referred to himself-->
+        <geometry>
+          <mesh filename="package://src/demo/environment/cables/meshes/cable1_2D/cable1.dae" scale="1 1 1"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://src/demo/environment/cables/meshes/cable1_2D/cable1.dae" scale="1 1 1"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="1" />
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />   <!-- evaluate if necessary to insert these parameters -->
+      </inertial>
+    </link>
+
+    <!-- <joint name="cable1_joint" type="fixed">
+      <parent link="ground_plane"/>
+      <child link="cable1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>   ! can be modified to change position referred to the parent link 
+    </joint> -->
+
+  </xacro:macro>
+
+</robot>

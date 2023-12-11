@@ -1,0 +1,184 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!! ISTRUZIONI GENERALI ALL'USO DI ROS1 E ROS2 !!!!!!!!!!!!!!!!!!!!!!!!!
+
+COMANDI BASE ROS1
+
+    SBLOCCARE PERMESSI: sudo chmod -R 777 <nome_file_o_pacchetto>
+
+    ATTIVARE COMUNICAZIONE SERIALE: sudo chmod 777 /dev/ttyACM0
+
+    SCARICARE IMMAGINI ARUCO: https://pyimagesearch.com/2020/12/14/generating-aruco-markers-with-opencv-and-python/
+
+    AGGIUNGERE MARKER ALLA SIMULAZIONE: https://answers.ros.org/question/365445/how-to-add-image-to-modelurdfxacro/
+
+GITHUB
+
+    UPDATE GITHUB : git status  git fetch  git status  git add "nome_file oppure '.' per aggiungere tutti i file"  git commit -m "Commento"  git push
+
+    DOWNLOAD GITHUB : git status   git stash   git pull   git stash apply  git fetch
+
+NAVIGATION
+
+    DOCKER : dare tutti i seguenti comandi da dentro    ERC_navigation (prendere i file con previsso "rs" se si lancia la nav_auto sul rover)
+
+    SIMULAZIONE: roslaunch leo_erc_gazebo leo_marsyard2021.launch
+
+    ARTAG: roslaunch ar_track_alvar detect_and_convert.launch (riconosce qual e' il tag, la sua posizione e la posizione relativa in x, y e z del rover)
+        -> rtab map
+        -> odom
+        -> distanza artag
+
+    LOCALIZZAZIONE: roslaunch localization odometry.launch
+                    roslaunch mrpt_localization ro_localization.launch 
+
+    NODO PYTHON: python3 src/leo_erc_desktop/JetsonDocker/start.py 
+
+    RICOSTRUZIONE MAPPA INIZIALE: roslaunch localization start_map.launch (costmap)
+
+    NAVIGAZIONE AUTONOMA: roslaunch navigation move_base1.launch
+                            rosrun navigation cli_navigation.py (per scegliere il waypoint da raggiungere)
+
+    APRIRE RVIZ: rviz (da terminale globale)
+                 ADD -> openConfig _ cartella rviz (attivare costmap)
+
+JETSON ROVER PER NAVIGAZIONE AUTONOMA
+
+    INDIRIZZO IPper riconoscere le reti, commando "ifconfig" e cercare wlo1 dove c'e' l'indirizzo ip
+
+    COMUNICAZIONE SSH: ssh projectred@192.168.82.10 -> password projectred 
+
+    CHIUDERE SSH: comando CTRL-D (si stampa logout) 
+
+    RIAVVIARE JETSON: sudo reboot
+
+    MODIFICRE FILE DI TESTO: per aprire file di testo, commando "vim <nome_file>", "wq" per salvare le modifiche
+
+    CARTEL SYSTEM: usare cd e ls per navigare tra le cartelle
+
+    INIZIARE COMUNICAZIONE SERIALE CON ARDUINO: sudo chmod 777 /dev/tty/ACM0 > password projectred
+
+    INIZIALIZZARE SERIAL ARDUINO: rosrun rosserial_arduino serial_node.py
+
+    LANCIARE NODO: ./bringup.sh (file che esegue un catkin_make e poi lancia tutti i file_launch)
+
+    LANCIARE COMANDI: rosnode kill -a (per chiudere tutto quello che si e' aperto con &)
+
+    LANCIARE NODO NAVIGAZIONE AUTONOMA: rosrun navigation cli_navigation.py (si possono dare comandi sulla posizione target da raggiungere)
+
+PER VEDERE I DISPOSITIVI USB CONNESSI AL PC
+
+    dmesg | grep tty
+
+NUC COMUNICAZIONE
+
+    inizilizzare da terminale:       ssh projectred@192.168.1.196
+    password:                        projectred
+    per interrompere la connessione: exit
+    per sbloccare permanentemente 
+    una porta seriale:             : sudo chown projectred /dev/ttyACM0 oppure tutti con sudo chown projectred /dev/ttyACM*
+
+    memorizzare chiave ssh sul mio pc:  cat .ssh/id_ed25519.pub
+                                        ssh-copy-id -i $HOME/.ssh/id_ed25519.pub projectred@192.168.1.196
+    scrivere in "more alias" in '.bashrc' : alias sshred='ssh -v -X projectred@192.168.1.196'
+
+ROS1 BRIDGE (installare con sudo apt install ros2-foxy-ros1-bridge)
+
+
+    1 - Far partire il 'roscore' su un terminale per lanciare il master di ROS1
+    2 - Far partire il seguento comando su un altro terminale per lanciare il bridge di ROS2: 'ros2 run ros1_bridge dynamic_bridge'
+    3 - Da questo momento in poi, se un talker e un listener avranno un pub/sub allo stesso topic, saranno messi in comunicazione 
+    4 - Verificare che tutto sia apposto con i seguenti comandi: 'ros2 run demo_nodes_cpp listener' e 'rosrun rospy_tutorials talker'
+    5 - Per pubblicare un messaggio su ROS1 da terminale scrivere 'rostopic pub /topic std_msgs/Int16 1' oppure rostopic pub /button8 std_msgs/Bool "data: true"
+    6 - Per pubblicare un messaggio su ROS2 da terminale scrivere 'ros2 topic pub /button std_msgs/msg/Int16 "{data: 25}"', occhio a conoscere bene la struttura del msg
+    7 - Per leggere un messaggio su ROS1 da terminale scrivere 'rostopic echo /topic' (attenzione: non va specificato il tipo di data, sara' necessario reinterpretarlo)
+    8 - Per leggere un messaggio su ROS2 da terminale scrivere 'ros2 topic echo /button std_msgs/Int16' oppure 'ros2 topic echo /button std_msgs/msg/Int16'(il tipo di dato e' gia' definito)
+    9 - Si puo' anche verificare il passaggio inverso di dati invertendo talker e listener
+    10 - Per passare immagini usare i comandi 'ros2 run image_tools cam2image' e 'rqt_image_view /image'
+    11 - Per non creare il bridge con tutti i possibili topic, si puo' lanciare da ros2 il comando 'ros2 run ros1_bridge parameter_bridge' post 'rosparam load bridge.yaml' su ros1
+    12 - Il bridge.yaml deve essere fatto come segue (i topic sono bidirezionali, i service bidirezionali), e salvato in una cartella a scelta
+        topics:
+        -
+            topic: /chatter  # Topic name on both ROS 1 and ROS 2
+            type: std_msgs/msg/String  # Type of topic to bridge
+            queue_size: 1  # Queue size
+                queue_size: 1
+            qos:
+                history: keep_last  # OR keep_all, then you can omit `depth` parameter below
+                depth: 10  # Only required when history == keep_last
+                reliability: reliable  # OR best_effort
+                durability: transient_local  # OR volatile
+                deadline:
+                    secs: 10
+                    nsecs: 2345
+                lifespan:
+                    secs: 20
+                    nsecs: 3456
+                liveliness: liveliness_system_default  # Values from https://design.ros2.org/articles/qos_deadline_liveliness_lifespan.html, eg. LIVELINESS_AUTOMATIC
+                liveliness_lease_duration:
+                    secs: 40
+                    nsecs: 5678
+        services_2_to_1:
+        -
+            service: /add_two_ints  # ROS 1 service name
+            type: roscpp_tutorials/TwoInts  # The ROS 1 service type name
+        services_1_to_:
+        -
+            service: /add_two_ints  # ROS 1 service name
+            type: roscpp_tutorials/TwoInts  # The ROS 1 service type name
+
+COMANDI BASE TERMINALE
+
+    Ctrl + Alt + T                  per aprire nuovo terminale
+    Ctrl + Maiusc + T               per aprire nuova scheda nello stesso terminale 
+    Alt + 1/2 ...                   per muoversi in un un'altra scheda dello stesso terminale
+
+COMANDI BASE ROS2
+
+        source install/local_setup.bash     per settare la directory da cui verranno lanciati i file
+
+    NODES, PUBLISHERS, SUBSCRIBERS  (guardare la documentazione dei 'msg' per capire i tipi di messaggio che si possono scambiare)
+
+        ros2 topic echo \topic              per ascoltare come viene pubblicato un dato
+        ros2 topic list -t                  per vedere i topic attivi con il corrispettivo tipo di messaggio
+        ros2 node list                      per guardare la lista dei nodi attivi
+        ros2 topic info /topic              per vedere chi pubblica o sottoscrive un certo topic, e il tipo di messaggio corrispondente
+        ros2 interface show 'msg'           per vedere come e' fatta la struttura di un certo messaggio
+        ros2 topic hz /topic                per vedere a che frequenza viene pubblicato un certo topic
+
+        COME PUBBLICARE UN MESSAGGIO
+            ros2 topic pub [--once --rate 1] /topic 'msg_type' "{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 1.8}}"
+    
+    SERVICES (guardare la documentazione dei 'srv' per capire i tipi di messaggio che si possono scambiare)
+
+        ros2 service list -t                            per visualizzare l'elenco di service attivi
+        ros2 service type <srv_name>                    per visualizzare il tipo di service
+        ros2 service find <srv_type>                    per trovare tuti i servizi di un certo tipo
+        ros2 interface show <srv_type>.srv              per visualizzare le info sulla struttura di un certo tipo di service
+        ros2 service call <srv_name> <srv_type> <args>  per fare la chiamata ad un service
+
+    PARAMETERS (i tipi di parameters a disposizione su ROS2 sono: integers, floats, booleans, strings, and lists)
+
+        ros2 param list                                                         per visualizzare la lista di parametri relativi ai nodi attivi
+        ros2 param get <node_name> <param_name>                                 per visualizzare il valore (e il tipo) di un parametro di un certo nodo    
+        ros2 param set <node_name> <param_name> <value>                         per settare il valore di un certo parametro di un certo nodo (non permamente)
+        ros2 param dump <node_name>                                             per salvare il valore dei parametri attuali di un certo nodo
+        ros2 param load <node_name> .<node_name>.yaml                           per ricaricare i valori salvati dei parametri di un certo nodo
+        ros2 run <pkg_name> <exec_name> --ros-args --params-file <file_name>    per settare dei parametri al lancio di un nodo
+
+    ACTIONS
+
+        ros2 action list -t                                                     per visualizzare un'action attiva con il corrispettivo tipo
+        ros2 action info <action_name>                                          per visualizzare i nodi client e server di una certa action
+        ros2 interface show <action_name>                                       per visualizzare la struttura dell'action type (richiesta, risultato e feedback)
+        ros2 action send_goal <action_name> <action_type> <values> --feedback   per mandare un goal ad un'action (i valori devono essere in formato .yaml), eventualmente con feedback
+
+    RQT CONSOLE
+
+        ros2 run rqt_console rqt_console                                        per visualizzare la console rqt (log msgs, severity e highlights)
+        ros2 run <pkg_name> <node_name> --ros-args --log-level <log_level>      per il log level (i livelli inferiori non verranno visulizzati) -> FATAL ERROR WARN INFO DEBUG
+
+    ROS2 BAG
+
+        ros2 bag record <topic_name>                            per salvare un file di record dei dati pubblicati su un topic
+        ros2 bag record -o subset <topic_name1> <topic_name2>   per salvare un file di record dei dati pubblicati su due 
+        ros2 bag info <bag_file_name>                           per visualizzare le informazioni prese da un bag file
+        ros2 bag play subset                                    per riprodurre la pubblicazione di messaggi sui topic come fatte durante la registrazione                             
