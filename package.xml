@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 
 <package format="3">
-  <name>pkg_arscontrol_internship_ros1</name>
+  <name>pkg_ars_ros1</name>
   <version>1.2.4</version>
   <description> Pkg container of useful ROS1 files for Italo Almirante's internship project</description>
   <maintainer email="255778@studenti.unimore.it">Italo Almirante</maintainer>

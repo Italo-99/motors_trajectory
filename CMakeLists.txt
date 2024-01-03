@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(pkg_arscontrol_internship_ros1)
+project(pkg_ars_ros1)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
