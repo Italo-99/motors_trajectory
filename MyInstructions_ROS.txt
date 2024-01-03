@@ -464,6 +464,8 @@ ROS1
 
     COPPELIASIM
 
+        sudo ln -s /home/italo/Desktop/VREP/./coppeliaSim.sh /usr/local/bin/coppeliaSim     to start CoppeliaSim just by typing (in any terminal) coppealiaSim
+
     REALSENSE CAMERA
 
     NAVIGATION
