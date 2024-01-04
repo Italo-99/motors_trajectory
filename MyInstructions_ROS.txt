@@ -450,21 +450,57 @@ ROS2
 
     LIFECYCLE NODES & INTRA-PROCESS COMMUNICATION
 
-    To copy the source code that manages lifetime, see github about ros2/demos/LIFECYCLE
+        To copy the source code that manages lifetime, see github about ros2/demos/LIFECYCLE
 
-    To sum up, it's just a simple state machine with corresponding transitions, anyway it can 
-    be implemented as a standard FSM as logic control, without complex ROS sintax.
+        To sum up, it's just a simple state machine with corresponding transitions, anyway it can 
+        be implemented as a standard FSM as logic control, without complex ROS sintax.
 
-    Intra-process communication handles a quite complex structure of coding, without a significant
-    utility to our case of study.
+        Intra-process communication handles a quite complex structure of coding, without a significant
+        utility to our case of study.
+
+CABLE DETECTION COMMANDS
+
+    The following are the commands to launch some procedures about cable detection through AI pkgs
 
 ROS1
+
+    PACKAGES
+
+        catkin_create_pkg [PKG_NAME] [pkg_dep]                                          to create a given pkg
+
+    EXECUTABLES 
+
+        add_executable([node_name] [file_path])                                         to make a given file as executable
+
+        target_link_libraries([node_name] ${catkin_LIBRARIES})                          to link libraries with a given node
+
+    TF 
+
+        rosrun tf2_tools view_frames.py                                                 to get a tf tree as .pdf file
+
+        rosrun tf tf_echo [frame_1] [frame_2]                                           to hear the tf transform between two frames
+
+        static_transform_publisher x y z yaw pitch roll frame_id child_frame_id         to publish a transform from the terminal with angles
+
+        static_transform_publisher x y z rx ry rz rw frame_id child_frame_id            to publish a transform from the terminal with quaternions
 
     MOVEIT
 
     COPPELIASIM
 
-        sudo ln -s /home/italo/Desktop/VREP/./coppeliaSim.sh /usr/local/bin/coppeliaSim     to start CoppeliaSim just by typing (in any terminal) coppealiaSim
+        1) LAUNCH COMMANDS
+
+            export VREP_ROOT=/home/italo/Desktop/VREP				                to set VREP folder path into .bashrc file
+
+            export PATH=$PATH:/home/italo/Desktop/VREP/coppeliaSim.sh               to setup the trick to launch coppeliaSim into .bashrc file
+
+            sudo ln -s /$path_to_VREP$/coppeliaSim.sh /usr/local/bin/coppeliaSim    to setup CoppeliaSim launch command ('trick')
+
+            ./coppeliaSim.sh                                                        to launch coppeliaSim
+
+            coppeliaSim                                                             to launch coppealiaSim if the 'trick' is done
+
+        2) OTHER COMMANDS                
 
     REALSENSE CAMERA
 
@@ -476,6 +512,8 @@ ROS1
 
     URDF
 
+        The useful tutorial is the same for ROS2: its sufficient to follow this tutorial http://wiki.ros.org/urdf/Tutorials
+
 USE THE following TO COPY AND PASTE THE SYMBOLS 
 
-    w "
+    w W "
