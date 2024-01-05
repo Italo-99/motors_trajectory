@@ -474,6 +474,25 @@ ROS1
 
         target_link_libraries([node_name] ${catkin_LIBRARIES})                          to link libraries with a given node
 
+    URDF
+
+        The useful tutorial is the same for ROS2: its sufficient to follow this tutorial http://wiki.ros.org/urdf/Tutorials
+
+        xacro --inorder model.xacro > model.urdf        to convert a xacro model to urdf (prove it without '--inorder')
+
+    NAVIGATION
+
+        An overall view on how to handle navigation setup is at http://wiki.ros.org/navigation/Tutorials/RobotSetup
+        Looking inside files of turtlebot3_gazebo, one can modify these sources for custom implementation
+
+        roslaunch turtlebot3_gazebo turtlebot_world.launch              to launch turtlebot simulation
+
+        roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch        to launch the teleop keyboard
+
+        roslaunch turtlebot3_slam turtlebot3_slam.launch                to launch slam algorithm upon ACML (param slam_methods:=gmapping) and rviz
+
+        roslaunch turtlebot3_navigation turtlebot3_navigation.launch    to start navigation and localization (param map_file:=maps/map.yaml)
+   
     TF 
 
         rosrun tf2_tools view_frames.py                                                 to get a tf tree as .pdf file
@@ -483,8 +502,6 @@ ROS1
         static_transform_publisher x y z yaw pitch roll frame_id child_frame_id         to publish a transform from the terminal with angles
 
         static_transform_publisher x y z rx ry rz rw frame_id child_frame_id            to publish a transform from the terminal with quaternions
-
-    MOVEIT
 
     COPPELIASIM
 
@@ -502,17 +519,11 @@ ROS1
 
         2) OTHER COMMANDS                
 
-    REALSENSE CAMERA
-
-    NAVIGATION
-    
-    PARTICLE FILTER
-
+    MOVEIT
+     
     UNIVERSAL ROBOT UR10
 
-    URDF
-
-        The useful tutorial is the same for ROS2: its sufficient to follow this tutorial http://wiki.ros.org/urdf/Tutorials
+    REALSENSE CAMERA
 
 USE THE following TO COPY AND PASTE THE SYMBOLS 
 
