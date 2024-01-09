@@ -517,7 +517,7 @@ ROS1
 
             coppeliaSim                                                             to launch coppealiaSim if the 'trick' is done
 
-        2) OTHER COMMANDS                
+        2) OTHER COMMANDS can be easily found on the User Manual on the internet: https://manual.coppeliarobotics.com/index.html                
 
     MOVEIT
      
