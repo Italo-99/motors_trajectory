@@ -458,10 +458,6 @@ ROS2
         Intra-process communication handles a quite complex structure of coding, without a significant
         utility to our case of study.
 
-CABLE DETECTION COMMANDS
-
-    The following are the commands to launch some procedures about cable detection through AI pkgs
-
 ROS1
 
     PACKAGES
@@ -524,6 +520,10 @@ ROS1
     UNIVERSAL ROBOT UR10
 
     REALSENSE CAMERA
+
+CABLE DETECTION COMMANDS
+
+    The following are the commands to launch some procedures about cable detection through AI pkgs
 
 USE THE following TO COPY AND PASTE THE SYMBOLS 
 
