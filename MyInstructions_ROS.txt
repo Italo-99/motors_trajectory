@@ -20,6 +20,12 @@ GITHUB
 
     CREATE A NEW REPO:      do it directly on GitHub, download it, then copy and paste all files from a locally created pkg, then push the new contents 
 
+    CREATE A NEW BRANCH:    git checkout -b almirante/devel
+
+    PUSH ON A NEW BRANCH:   git add .   git commit -m "commit msg"  git push origin almirante/devel
+
+    TO SWITCH IN BRANCHES:  git checkout almirante/devel    git checkout main       git checkout master 
+
 PROJECTRED 2021 NAVIGATION SIMULATION
 
     DOCKER : 
