@@ -30,3 +30,61 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  geometry_msgs
+  visualization_msgs
+  moveit_core
+  moveit_visual_tools
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  pluginlib
+  tf2_ros
+  tf2_eigen
+  tf2_geometry_msgs
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES motor_mover
+  INCLUDE_DIRS
+  ${THIS_PACKAGE_INCLUDE_DIRS}
+  CATKIN_DEPENDS
+  moveit_core
+  moveit_visual_tools
+  moveit_ros_planning_interface
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
+
+link_directories(${catkin_LIBRARY_DIRS})
+
+# LIBRARIES DECLARATIONS
+# motor planner library declaration
+add_library(motor_planner src/motor_planner.cpp)
+target_link_libraries(motor_planner ${catkin_LIBRARIES})
+add_dependencies(motor_planner ${catkin_EXPORTED_TARGETS})
+
+# motor mover library declaration
+add_library(motor_mover src/motor_mover.cpp)
+target_link_libraries(motor_mover ${catkin_LIBRARIES})
+add_dependencies(motor_mover ${catkin_EXPORTED_TARGETS})
+
+# gripper library declaration
+add_library(gripper src/gripper.cpp)
+target_link_libraries(gripper ${catkin_LIBRARIES})
+add_dependencies(gripper ${catkin_EXPORTED_TARGETS})
+
+# EXECUTABLES DECLARATIONS
+# motor_planner_node code executable
+add_executable(motor_planner_node src/motor_planner.cpp)
+target_link_libraries(motor_planner_node ${catkin_LIBRARIES})
+
+# motor_planner_node code executable
+add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp)
+target_link_libraries(robotiq85_gripper ${catkin_LIBRARIES})
