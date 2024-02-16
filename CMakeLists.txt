@@ -33,7 +33,9 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  sensor_msgs
   std_msgs
+  std_srvs
   geometry_msgs
   visualization_msgs
   moveit_core
@@ -47,14 +49,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES motor_mover
-  INCLUDE_DIRS
-  ${THIS_PACKAGE_INCLUDE_DIRS}
-  CATKIN_DEPENDS
-  moveit_core
-  moveit_visual_tools
-  moveit_ros_planning_interface
+  INCLUDE_DIRS include srv
+  LIBRARIES motor_planner motor_mover gripper
 )
 
 include_directories(
@@ -86,5 +82,5 @@ add_executable(motor_planner_node src/motor_planner.cpp)
 target_link_libraries(motor_planner_node ${catkin_LIBRARIES})
 
 # motor_planner_node code executable
-add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp)
+add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp src/motor_mover.cpp src/gripper.cpp)
 target_link_libraries(robotiq85_gripper ${catkin_LIBRARIES})

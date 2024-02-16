@@ -38,7 +38,8 @@
 #ifndef GRIPPER_H
 #define GRIPPER_H
 
-#include "motor_mover.h"
+#include "robotiq85_gripper/motor_mover.h"
+#include "std_srvs/SetBool.h"
 
 class Gripper : public MotorMover
 {
@@ -49,19 +50,24 @@ public:
             double              vel_limit,
             double              acc_limit,
             double              ctrl_rate,
+            bool                inst_target,
             double              tips_strike,
             double              tcp_closed,
             double              tcp_opened);
 
-    ~Gripper();
+    // ~Gripper();
 
-    bool moveGripperCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
+    void gripper_spinner(void);
 
 private:
     ros::ServiceServer gripper_control_srv_;
+    bool moveGripperCallback(std_srvs::SetBool::Request&  req,
+                             std_srvs::SetBool::Response& res);
 
-    double tcp_closed_;
-    double tcp_opened_;
+    std::vector<double> joint_limits_;
+    double              tips_strike_;
+    double              tcp_closed_;
+    double              tcp_opened_;
 };
 
 #endif // GRIPPER_H

@@ -35,7 +35,7 @@
  *  Created on: [2024-01-17]
 */
 
-#include "motor_mover.h"
+#include "robotiq85_gripper/motor_mover.h"
 
 MotorMover::MotorMover( std::string         motor_name,
                         std::string         joint_name,
@@ -44,9 +44,9 @@ MotorMover::MotorMover( std::string         motor_name,
                         double              acc_limit,
                         double              ctrl_rate,
                         bool                inst_target)
-    : nh_("~"), motor_name_(motor_name), joint_limit_(joint_limit),
-                joint_name_(joint_name), vel_limit_(vel_limit),
-                acc_limit_(acc_limit),   ctrl_rate_(ctrl_rate),
+    : nh_("~"), motor_name_(motor_name), joint_name_(joint_name),
+                joint_limits_(joint_limits), vel_limit_(vel_limit),
+                acc_limit_(acc_limit), ctrl_rate_(ctrl_rate),
                 inst_target_(inst_target)
 {
     // Subscriber to user commands
@@ -62,9 +62,15 @@ MotorMover::MotorMover( std::string         motor_name,
     ctrl_time_      = 1/ctrl_rate_;
     time_acc_dec_   = vel_limit/acc_limit;
 
-    ROS_INFO("%s motor control sampling time set at %d s",motor_name_,ctrl_time_);
-    ROS_INFO("Acceleration time set at %d s",time_acc_dec_);
+    ROS_INFO("%s motor control sampling time set at %f s",motor_name_.c_str(),ctrl_time_);
+    ROS_INFO("Acceleration time set at %f s",time_acc_dec_);
 }
+
+// MotorMover::~MotorMover()
+// {
+//     // Insert destructor
+//     return 0;
+// }
 
 // Update current motor position
 void MotorMover::motorPosUpdate()
@@ -170,17 +176,23 @@ void MotorMover::moveMotorCallback(const std_msgs::Float64::ConstPtr& msg)
     double target_pos = msg->data;  // within [0,100] interval
 
     // Remap target_pos to fit within joint limits
-    target_pos = std::max(joints_limit_[0], std::min(joints_limit_[1],
-                 target_pos * (joints_limit_[1] - joints_limit_[0]) / 100.0));
+    target_pos = std::max(joint_limits_[0], std::min(joint_limits_[1],
+                 target_pos * (joint_limits_[1] - joint_limits_[0]) / 100.0));
 
     // Check if target_pos is within joint limits
-    if (target_pos < joints_limit_[0] || target_pos > joints_limit_[1]) {
+    if (target_pos < joint_limits_[0] || target_pos > joint_limits_[1]) {
         ROS_WARN("Target position is out of joint limits!");
         return;
     }
 
     // Update target pose
     target_pos_ = target_pos;
+}
+
+// Setter of target pose for child class
+void MotorMover::setTargetPos(double target)
+{
+    target_pos_ = target;
 }
 
 // Fake controller publisher to move group 
@@ -190,5 +202,12 @@ void MotorMover::publishFakeMove(double current_pos)
     joint_state_msg.header.stamp = ros::Time::now();
     joint_state_msg.name.push_back(joint_name_);
     joint_state_msg.position.push_back(current_pos);
-    joint_states_pub_.publish(joint_state_msg);
+    fake_move_pub_.publish(joint_state_msg);
+}
+
+// Spinner ROS + motor update
+void MotorMover::spinner()
+{
+    ros::spinOnce();
+    motorPosUpdate();
 }
