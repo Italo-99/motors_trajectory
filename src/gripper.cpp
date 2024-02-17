@@ -51,7 +51,7 @@ Gripper::Gripper(std::string node_name)
                                     ctrl_rate_,inst_target_);
 
     // Declare service open/close gripper
-    gripper_control_srv_ = nh_.advertiseService(gripper_name_+ 
+    gripper_control_srv_ = nh_.advertiseService(gripper_name_+ "/" + joint_name_+
                         "/move_gripper", &Gripper::moveGripperCallback, this);
 }
 

@@ -19,11 +19,11 @@ tips_strike:  85          ## maximum distance between tips [mm]
 
 tcp_closed:   144         ## tcp distance from base_link when closed
                           ## (total_ee_length - tip_height/2) = 163-38/2 
-                          ## 144 real, 126 sim
+                          ## 144 real, 144 sim
 
 tcp_opened:   130         ## tcp distance from base_link when open
                           ## (open_ee_length - tip_height/2) = 149-38/2
-                          ## 130 real, 115 sim
+                          ## 130 real, 130 sim
 
 tcp:          140         ## user fixed tcp 
                           ## (it compensates object size - gripper strike) 
