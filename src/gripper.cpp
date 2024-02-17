@@ -130,9 +130,10 @@ void Gripper::check_param()
 bool Gripper::moveGripperCallback(std_srvs::SetBool::Request&  req,
                                   std_srvs::SetBool::Response& res)
 {
-    double target_pos = req.data ? joint_limits_[1] : joint_limits_[0];
+    double target_pos = req.data ? 100. : 0.;
     gripper_mover_->setTargetPos(target_pos);
     res.success = true;
+    res.message = req.data ? "Gripper closed" : "Gripper opened";
     return true;
 }
 

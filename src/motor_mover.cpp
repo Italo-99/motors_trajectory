@@ -68,9 +68,8 @@ MotorMover::MotorMover( std::string&         motor_name,
 }
 
 // MotorMover::~MotorMover()
-// {
-//     // Insert destructor
-//     return 0;
+    // {
+    //     // Insert destructor
 // }
 
 // Update current motor position
@@ -178,7 +177,7 @@ void MotorMover::moveMotorCallback(const std_msgs::Float64::ConstPtr& msg)
     setTargetPos(msg->data);  
 }
 
-// Setter of target pose for child class
+// Setter of target pose for child class (input within [0,100] interval)
 void MotorMover::setTargetPos(double target_pos)
 {
     // Remap target_pos to fit within joint limits
