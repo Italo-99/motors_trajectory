@@ -1,7 +1,7 @@
 <launch>
   <node name="robotiq85_gripper" type="robotiq85_gripper" 
-         pkg="robotiq85_gripper" output="screen">
+         pkg="gripper" output="screen">
     <rosparam command="load" 
-      file="$(find robotiq85_gripper)/config/robotiq85_gripper.yaml"/>
+      file="$(find gripper)/config/robotiq85_gripper.yaml"/>
   </node>
 </launch>

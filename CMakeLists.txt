@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(robotiq85_gripper)
+project(gripper)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -64,23 +64,23 @@ link_directories(${catkin_LIBRARY_DIRS})
 # motor planner library declaration
 add_library(motor_planner src/motor_planner.cpp)
 target_link_libraries(motor_planner ${catkin_LIBRARIES})
-add_dependencies(motor_planner ${catkin_EXPORTED_TARGETS})
+# add_dependencies(motor_planner ${catkin_EXPORTED_TARGETS})
 
 # motor mover library declaration
 add_library(motor_mover src/motor_mover.cpp)
 target_link_libraries(motor_mover ${catkin_LIBRARIES})
-add_dependencies(motor_mover ${catkin_EXPORTED_TARGETS})
+# add_dependencies(motor_mover ${catkin_EXPORTED_TARGETS})
 
 # gripper library declaration
 add_library(gripper src/gripper.cpp)
 target_link_libraries(gripper ${catkin_LIBRARIES})
-add_dependencies(gripper ${catkin_EXPORTED_TARGETS})
+add_dependencies(gripper ${catkin_EXPORTED_TARGETS} motor_mover)
 
 # EXECUTABLES DECLARATIONS
 # motor_planner_node code executable
 add_executable(motor_planner_node src/motor_planner.cpp)
 target_link_libraries(motor_planner_node ${catkin_LIBRARIES})
 
-# motor_planner_node code executable
-add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp src/motor_mover.cpp src/gripper.cpp)
-target_link_libraries(robotiq85_gripper ${catkin_LIBRARIES})
+# robotiq85_gripper_node code executable
+add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp)
+target_link_libraries(robotiq85_gripper ${catkin_LIBRARIES} gripper motor_mover)

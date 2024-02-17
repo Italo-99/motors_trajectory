@@ -41,33 +41,42 @@
 #include "robotiq85_gripper/motor_mover.h"
 #include "std_srvs/SetBool.h"
 
-class Gripper : public MotorMover
+class Gripper
 {
 public:
-    Gripper(std::string         gripper_name,
-            std::string         joint_name,
-            std::vector<double> joint_limits,
-            double              vel_limit,
-            double              acc_limit,
-            double              ctrl_rate,
-            bool                inst_target,
-            double              tips_strike,
-            double              tcp_closed,
-            double              tcp_opened);
+    Gripper(std::string node_name);
+    ~Gripper();
 
-    // ~Gripper();
-
+    // ROS spinner + update gripper position
     void gripper_spinner(void);
 
 private:
+
+    // Open/close gripper service
     ros::ServiceServer gripper_control_srv_;
     bool moveGripperCallback(std_srvs::SetBool::Request&  req,
                              std_srvs::SetBool::Response& res);
 
+    // Class attributes
+    std::string         gripper_name_;
+    std::string         joint_name_;
     std::vector<double> joint_limits_;
+    double              vel_limit_;
+    double              acc_limit_;
+    double              ctrl_rate_;
+    bool                inst_target_;
     double              tips_strike_;
     double              tcp_closed_;
     double              tcp_opened_;
+
+    MotorMover*         gripper_mover_;
+    std::string         node_name_;
+
+    // ROS variables
+    ros::NodeHandle nh_;
+
+    // Check class attributes
+    void check_param(void);
 };
 
 #endif // GRIPPER_H

@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 
 <package format="3">
-  <name>robotiq85_gripper</name>
+  <name>gripper</name>
   <version>1.2.4</version>
-  <description> Pkg container of useful ROS1 files for the robotiq85_gripper used for Italo Almirante's internship project</description>
+  <description> Pkg container of useful ROS1 files for the grippers used for Italo Almirante's internship project</description>
   <maintainer email="255778@studenti.unimore.it">Italo Almirante</maintainer>
   <license>Apache License 2.0</license>
 

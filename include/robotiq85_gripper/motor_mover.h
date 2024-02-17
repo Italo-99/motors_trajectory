@@ -41,39 +41,33 @@
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
+#include <vector>
 
 class MotorMover 
 {
 public:
-    MotorMover( std::string         motor_name, 
-                std::string         joint_name, 
-                std::vector<double> joint_limits,  
-                double              vel_limit, 
-                double              acc_limit, 
-                double              ctrl_rate,
-                bool                inst_target);   
+    MotorMover( std::string&         motor_name, 
+                std::string&         joint_name, 
+                std::vector<double>& joint_limits,  
+                double               vel_limit, 
+                double               acc_limit, 
+                double               ctrl_rate,
+                bool                 inst_target);   
                 
     //Set inst_target to true to update setpoint at target instantaneously 
 
     // ~MotorMover();
 
+    // ROS spinner
     void spinner(void);
-    
-    // Update current motor position
-    void motorPosUpdate(void);
-
-    // Update motor position target pose
-    void moveMotorCallback(const std_msgs::Float64::ConstPtr& msg);
 
     // Setter of target pose for child class
     void setTargetPos(double);
 
-    // ROS variables
-    ros::NodeHandle nh_;
-
 private:
     
     // ROS variables
+    ros::NodeHandle nh_;
     ros::Subscriber gripper_control_sub_;
     ros::Publisher  fake_move_pub_;
 
@@ -91,7 +85,12 @@ private:
     double current_pos_;
     double ctrl_time_;
     double current_vel_;
-    double time_acc_dec_;
+    
+    // Update current motor position
+    void motorPosUpdate(void);
+
+    // Update motor position target pose
+    void moveMotorCallback(const std_msgs::Float64::ConstPtr& msg);
 
     // Motor moving function through move group fake controller
     void publishFakeMove(double target_pos);

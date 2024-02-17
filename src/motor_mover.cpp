@@ -37,33 +37,34 @@
 
 #include "robotiq85_gripper/motor_mover.h"
 
-MotorMover::MotorMover( std::string         motor_name,
-                        std::string         joint_name,
-                        std::vector<double> joint_limits,
-                        double              vel_limit,
-                        double              acc_limit,
-                        double              ctrl_rate,
-                        bool                inst_target)
+MotorMover::MotorMover( std::string&         motor_name,
+                        std::string&         joint_name,
+                        std::vector<double>& joint_limits,
+                        double               vel_limit,
+                        double               acc_limit,
+                        double               ctrl_rate,
+                        bool                 inst_target)
     : nh_("~"), motor_name_(motor_name), joint_name_(joint_name),
                 joint_limits_(joint_limits), vel_limit_(vel_limit),
                 acc_limit_(acc_limit), ctrl_rate_(ctrl_rate),
                 inst_target_(inst_target)
 {
     // Subscriber to user commands
-    gripper_control_sub_ = nh_.subscribe(motor_name_ + "/gripper_control",
+    gripper_control_sub_ = nh_.subscribe(joint_name_+"/gripper_control",
                             1, &MotorMover::moveMotorCallback, this);
+
     // Send command to move group fake controller
     fake_move_pub_       = nh_.advertise<sensor_msgs::JointState>(
                             "/move_group/fake_controller_joint_states", 1);
+
     // Init class variables
     target_pos_     = 0;
     current_vel_    = 0;
     current_pos_    = joint_limits_[0];
     ctrl_time_      = 1/ctrl_rate_;
-    time_acc_dec_   = vel_limit/acc_limit;
 
-    ROS_INFO("%s motor control sampling time set at %f s",motor_name_.c_str(),ctrl_time_);
-    ROS_INFO("Acceleration time set at %f s",time_acc_dec_);
+    ROS_INFO("%s motor control sampling time set at %f s",
+                motor_name_.c_str(),ctrl_time_);
 }
 
 // MotorMover::~MotorMover()
@@ -79,11 +80,12 @@ void MotorMover::motorPosUpdate()
     if (inst_target_)
     {
         current_pos_ = target_pos_;
+        publishFakeMove(current_pos_);
         return;
     }
 
     // Check if target position has been reached, exit from the function
-    if ((target_pos_-current_pos_<0.001) || (target_pos_-current_pos_>-0.001))
+    if ((target_pos_-current_pos_<0.001) && (target_pos_-current_pos_>-0.001))
     {
         current_vel_ = 0;
         current_pos_ = target_pos_;
@@ -170,29 +172,28 @@ void MotorMover::motorPosUpdate()
     publishFakeMove(current_pos_);
 }
 
-// Update current target pose
+// Update current target pose (input within [0,100] interval)
 void MotorMover::moveMotorCallback(const std_msgs::Float64::ConstPtr& msg) 
 {
-    double target_pos = msg->data;  // within [0,100] interval
+    setTargetPos(msg->data);  
+}
 
+// Setter of target pose for child class
+void MotorMover::setTargetPos(double target_pos)
+{
     // Remap target_pos to fit within joint limits
     target_pos = std::max(joint_limits_[0], std::min(joint_limits_[1],
                  target_pos * (joint_limits_[1] - joint_limits_[0]) / 100.0));
 
     // Check if target_pos is within joint limits
-    if (target_pos < joint_limits_[0] || target_pos > joint_limits_[1]) {
+    if (target_pos < joint_limits_[0] || target_pos > joint_limits_[1])
+    {
         ROS_WARN("Target position is out of joint limits!");
         return;
     }
 
     // Update target pose
     target_pos_ = target_pos;
-}
-
-// Setter of target pose for child class
-void MotorMover::setTargetPos(double target)
-{
-    target_pos_ = target;
 }
 
 // Fake controller publisher to move group 

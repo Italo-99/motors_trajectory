@@ -39,45 +39,19 @@
 
 int main(int argc, char** argv)
 {
+    // Node name
+    std::string node_name = "robotiq85_gripper";
+
     // Init node
-    ros::init(argc, argv, "robotiq85_gripper");
-    ros::NodeHandle nh("~");
-
-    // Init node param
-    std::string         gripper_name;
-    std::string         joint_name;
-    std::vector<double> joint_limits;
-    double              vel_limit;
-    double              acc_limit;
-    double              ctrl_rate;
-    bool                inst_target;
-    double              tips_strike;
-    double              tcp_closed;
-    double              tcp_opened;
-
-    nh.param<std::string>("robotiq85_gripper/gripper_name", gripper_name);
-    nh.param<std::string>("robotiq85_gripper/joint_name", joint_name);
-    nh.param<std::vector<double>>("robotiq85_gripper/joint_limits", joint_limits);
-    nh.param<double>("robotiq85_gripper/vel_limit", vel_limit);
-    nh.param<double>("robotiq85_gripper/acc_limit", acc_limit);
-    nh.param<double>("robotiq85_gripper/ctrl_rate", ctrl_rate);
-    nh.param<bool>("robotiq85_gripper/inst_target", inst_target);
-    nh.param<double>("robotiq85_gripper/tips_strike", tips_strike);
-    nh.param<double>("robotiq85_gripper/tcp_closed", tcp_closed);
-    nh.param<double>("robotiq85_gripper/tcp_opened", tcp_opened);
+    ros::init(argc, argv, node_name);
 
     // Call gripper constructor
-    Gripper robotiq85_gripper(gripper_name,joint_name,joint_limits,
-                              vel_limit,acc_limit,ctrl_rate,inst_target,
-                              tips_strike,tcp_closed,tcp_opened);
-    ros::Rate rate(ctrl_rate);
+    Gripper robotiq85_gripper(node_name);
 
-    // ROS spinner
-    while (ros::ok()) {
-        robotiq85_gripper.gripper_spinner();
-        rate.sleep();
-    }
+    // Call gripper spinner
+    robotiq85_gripper.gripper_spinner();
 
+    // When ROS spinner is blocked
     ROS_INFO("Gripper node is shutting down");
 
     return 0;

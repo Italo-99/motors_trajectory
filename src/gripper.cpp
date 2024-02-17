@@ -37,46 +37,108 @@
 
 #include "robotiq85_gripper/gripper.h"
 
-Gripper::Gripper(std::string         gripper_name,
-                 std::string         joint_name,
-                 std::vector<double> joint_limits,
-                 double              vel_limit,
-                 double              acc_limit,
-                 double              ctrl_rate,
-                 bool                inst_target,
-                 double              tips_strike,
-                 double              tcp_closed,
-                 double              tcp_opened)
-    : MotorMover(gripper_name, joint_name, joint_limits,
-                 vel_limit, acc_limit, ctrl_rate,inst_target),
-                 tips_strike_(tips_strike),
-                 tcp_closed_(tcp_closed), tcp_opened_(tcp_opened)
+Gripper::Gripper(std::string node_name)
 {
-    // Instantiate global class variables
-    joint_limits_.push_back(joint_limits[0]);
-    joint_limits_.push_back(joint_limits[1]);
+    // Load node name param
+    node_name_ = node_name;
+
+    // Load params into global class attributes
+    check_param();
+
+    // Call the motor_mover class
+    gripper_mover_ = new MotorMover(gripper_name_,joint_name_,
+                                    joint_limits_,vel_limit_,acc_limit_,
+                                    ctrl_rate_,inst_target_);
 
     // Declare service open/close gripper
-    gripper_control_srv_ = nh_.advertiseService(gripper_name + 
+    gripper_control_srv_ = nh_.advertiseService(gripper_name_+ 
                         "/move_gripper", &Gripper::moveGripperCallback, this);
 }
 
-// Gripper::~Gripper()
-// {
-//     // Insert destructor
-//     return 0;
-// }
+Gripper::~Gripper(){delete gripper_mover_;}
+
+void Gripper::check_param()
+{
+    if (!nh_.getParam(node_name_+"/gripper_name", gripper_name_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/joint_name", joint_name_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/joint_limits", joint_limits_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/vel_limit", vel_limit_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/acc_limit", acc_limit_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/ctrl_rate", ctrl_rate_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/inst_target", inst_target_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/tips_strike", tips_strike_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/tcp_closed", tcp_closed_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+    if (!nh_.getParam(node_name_+"/tcp_opened", tcp_opened_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
+}
 
 bool Gripper::moveGripperCallback(std_srvs::SetBool::Request&  req,
                                   std_srvs::SetBool::Response& res)
 {
     double target_pos = req.data ? joint_limits_[1] : joint_limits_[0];
-    setTargetPos(target_pos);
+    gripper_mover_->setTargetPos(target_pos);
     res.success = true;
     return true;
 }
 
 void Gripper::gripper_spinner()
 {
-    spinner();
+    // Set spinner rate
+    ros::Rate rate(ctrl_rate_);
+
+    // ROS spinner
+    while (ros::ok())
+    {
+        gripper_mover_->spinner();
+        rate.sleep();
+    }
 }
