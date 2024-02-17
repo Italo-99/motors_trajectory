@@ -12,13 +12,22 @@ acc_limit:    3.5         ## rad/s^2
 
 ctrl_rate:    10.0        ## Hz
 
-inst_target:  false       ## set to false if target is reached by non instantaneous trajectory
+inst_target:  false       ## set to false if target is reached by 
+                          ## non instantaneous trajectory
 
-tips_strike:  85          ## mm
+tips_strike:  85          ## maximum distance between tips [mm]
 
 tcp_closed:   144         ## tcp distance from base_link when closed
+                          ## (total_ee_length - tip_height/2) = 163-38/2 
+                          ## 144 real, 126 sim
 
 tcp_opened:   130         ## tcp distance from base_link when open
+                          ## (open_ee_length - tip_height/2) = 149-38/2
+                          ## 130 real, 115 sim
+
+tcp:          140         ## user fixed tcp 
+                          ## (it compensates object size - gripper strike) 
+                          ## 140 real, 140 sim
 
 # Use the following command to launch the node with the above params
 # rosrun robotiq85_gripper robotiq85_gripper gripper_name:="robotiq85_gripper" joint_name:="finger_joint" joint_limits:=[0.0, 0.725] vel_limit:=0.825 _acc_limit:=3.6 ctrl_rate:=10 inst_target:=true tips_strike:=85 tcp_closed:=144 tcp_opened:=130

@@ -68,6 +68,7 @@ private:
     double              tips_strike_;
     double              tcp_closed_;
     double              tcp_opened_;
+    double              tcp_;
 
     MotorMover*         gripper_mover_;
     std::string         node_name_;

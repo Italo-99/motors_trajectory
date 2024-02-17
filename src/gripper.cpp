@@ -119,6 +119,12 @@ void Gripper::check_param()
             ros::shutdown();
             return;
         }
+    if (!nh_.getParam(node_name_+"/tcp", tcp_))
+        {
+            ROS_ERROR("parameter not found");
+            ros::shutdown();
+            return;
+        }
 }
 
 bool Gripper::moveGripperCallback(std_srvs::SetBool::Request&  req,
