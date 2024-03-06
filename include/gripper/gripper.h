@@ -38,8 +38,9 @@
 #ifndef GRIPPER_H
 #define GRIPPER_H
 
-#include "robotiq85_gripper/motor_mover.h"
+#include "gripper/motor_mover.h"
 #include "std_srvs/SetBool.h"
+#include "std_msgs/Bool.h"
 
 class Gripper
 {
@@ -57,6 +58,22 @@ private:
     bool moveGripperCallback(std_srvs::SetBool::Request&  req,
                              std_srvs::SetBool::Response& res);
 
+    // Grab/detach gripper service
+    ros::ServiceServer gripper_grab_srv_;
+    bool grabbingGripperCallback(std_srvs::SetBool::Request&  req,
+                                 std_srvs::SetBool::Response& res);
+
+    // Subscriber of object found in the middle of robot tips
+    ros::Subscriber objFoundSubscriber_;
+    void objFoundCallback(const std_msgs::Bool::ConstPtr& msg);
+
+    // Grabbing and detach object at the gripper: pipeline implementation
+    void grabObj(void);
+    void detachObj(void);
+
+    // Publisher to attach/detach an object at the gripper
+    ros::Publisher attachObjGripperPub_;
+
     // Class attributes
     std::string         gripper_name_;
     std::string         joint_name_;
@@ -69,11 +86,14 @@ private:
     double              tcp_closed_;
     double              tcp_opened_;
     double              tcp_;
+    bool                sim_;
+    bool                obj_gripper_found_;
+    bool                grab_obj_cmd_;
 
     MotorMover*         gripper_mover_;
     std::string         node_name_;
 
-    // ROS variables
+    // ROS node variables
     ros::NodeHandle nh_;
 
     // Check class attributes

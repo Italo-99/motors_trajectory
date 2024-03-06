@@ -1,4 +1,4 @@
-#include "robotiq85_gripper/motor_planner.h"
+#include "gripper/motor_planner.h"
 
 MotorPlanner::MotorPlanner(const std::string& group_name)
     : move_group_(group_name) {

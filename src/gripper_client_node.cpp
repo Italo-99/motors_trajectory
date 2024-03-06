@@ -1,7 +1,7 @@
 // gripper_client_node.cpp
 
 #include "ros/ros.h"
-#include "your_package/YourGripperService.h"  // Replace 'your_package' and 'YourGripperService' with your actual package and service name
+#include "gripper/RobotiQGripperControl.h"
 
 class GripperClient
 {

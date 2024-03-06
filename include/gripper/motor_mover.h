@@ -64,6 +64,9 @@ public:
     // Setter of target pose for child class
     void setTargetPos(double);
 
+    // Get of current (setpoint) pose for child class
+    double getCurrentPos(void);
+
 private:
     
     // ROS variables

@@ -35,7 +35,7 @@
  *  Created on: [2024-01-17]
 */
 
-#include "robotiq85_gripper/motor_mover.h"
+#include "gripper/motor_mover.h"
 
 MotorMover::MotorMover( std::string&         motor_name,
                         std::string&         joint_name,
@@ -193,6 +193,13 @@ void MotorMover::setTargetPos(double target_pos)
 
     // Update target pose
     target_pos_ = target_pos;
+}
+
+// Getter of current (setpoint) pose of the gripper (output within [0,100] interval)
+double MotorMover::getCurrentPos()
+{
+    return (current_pos_-joint_limits_[0])*100.0
+            /(joint_limits_[1]-joint_limits_[0]);
 }
 
 // Fake controller publisher to move group 

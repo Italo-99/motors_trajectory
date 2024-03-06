@@ -35,7 +35,7 @@
  *  Created on: [2024-01-17]
 */
 
-#include "robotiq85_gripper/gripper.h"
+#include "gripper/gripper.h"
 
 int main(int argc, char** argv)
 {

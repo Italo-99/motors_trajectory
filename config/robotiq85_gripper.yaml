@@ -6,7 +6,7 @@ joint_name:   finger_joint
 
 joint_limits: [0.0, 0.725]  ## rad
 
-vel_limit:    0.825       ## rad/s
+vel_limit:    0.3         ## rad/s -> adviced 0.825
 
 acc_limit:    3.5         ## rad/s^2
 
@@ -29,5 +29,10 @@ tcp:          140         ## user fixed tcp
                           ## (it compensates object size - gripper strike) 
                           ## 140 real, 140 sim
 
+sim:          true       ## set if gripper has to be used in sim or real mode
+
 # Use the following command to launch the node with the above params
-# rosrun robotiq85_gripper robotiq85_gripper gripper_name:="robotiq85_gripper" joint_name:="finger_joint" joint_limits:=[0.0, 0.725] vel_limit:=0.825 _acc_limit:=3.6 ctrl_rate:=10 inst_target:=true tips_strike:=85 tcp_closed:=144 tcp_opened:=130
+# rosrun robotiq85_gripper robotiq85_gripper gripper_name:="robotiq85_gripper" 
+# joint_name:="finger_joint" joint_limits:=[0.0, 0.725] vel_limit:=0.825 
+# acc_limit:=3.6 ctrl_rate:=10 inst_target:=true tips_strike:=85 
+# tcp_closed:=144 tcp_opened:=130 tcp:=140 sim:=true
