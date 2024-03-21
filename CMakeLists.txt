@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0048 NEW)
 project(gripper)
 
 # Default to C99
@@ -37,6 +38,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   geometry_msgs
+  message_generation
   visualization_msgs
   moveit_core
   moveit_visual_tools
@@ -48,13 +50,25 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
 )
 
+add_service_files(
+  FILES
+  RobotiQGripperControl.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include srv
-  LIBRARIES motor_planner motor_mover gripper
+  LIBRARIES motor_planner motor_mover
+  ${THIS_PACKAGE_INCLUDE_DIRS}
 )
 
 include_directories(
   include
+  srv
   ${catkin_INCLUDE_DIRS}
 )
 
