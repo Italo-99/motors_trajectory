@@ -4,15 +4,14 @@
 <package format="3">
   <name>gripper</name>
   <version>1.2.4</version>
-  <description> Pkg container of useful ROS1 files for the grippers used for Italo Almirante's internship project</description>
-  <maintainer email="255778@studenti.unimore.it">Italo Almirante</maintainer>
+  <description> Pkg container of useful ROS1 files to handle grippers</description>
+  <maintainer email="italo.almirante@unimore.it">Italo Almirante</maintainer>
   <license>Apache License 2.0</license>
 
   <url>http://ros.org/wiki/foo_core</url>
   <author>Italo Almirante</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-
   <build_depend>message_generation</build_depend>
 
   <depend>roscpp</depend>
@@ -26,13 +25,7 @@
   <depend>moveit_ros_planning_interface</depend>
   <depend>moveit_ros_perception</depend>
   <depend>moveit_visual_tools</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_geometry_msgs</depend>
 
   <exec_depend>message_runtime</exec_depend>
-
-  <test_depend>python-mock</test_depend>
-  <doc_depend>doxygen</doc_depend>
 
 </package>

@@ -45,9 +45,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   moveit_ros_planning_interface
   pluginlib
-  tf2_ros
-  tf2_eigen
-  tf2_geometry_msgs
 )
 
 add_service_files(
