@@ -41,6 +41,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Bool.h"
 #include <vector>
 
 class MotorMover 
@@ -74,6 +75,7 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber motor_control_sub_;
     ros::Subscriber joint_state_sub_;
+    ros::Subscriber instKine_setter_sub_;
     ros::Publisher  fake_move_pub_;
 
     // Class attributes
@@ -94,6 +96,7 @@ private:
     double current_vel_;
     bool   first_joint_sub_;
     int    motor_index_;
+    bool   inst_kine_;
     
     // Update current motor position
     void motorPosUpdate(void);
@@ -106,6 +109,10 @@ private:
 
     // Motor moving function through move group fake controller
     void publishFakeMove(double target_pos);
+
+    // Instantaneous kine mode callback
+    void instantKineSetterCallback(const std_msgs::Bool::ConstPtr& msg);
+
 };
 
 #endif // MOTOR_MOVER_H

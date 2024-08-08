@@ -63,9 +63,12 @@ MotorMover::MotorMover( std::string&                    group_name,
     fake_move_pub_       = nh_.advertise<sensor_msgs::JointState>(
                             "/move_group/fake_controller_joint_states", 1);
 
+    instKine_setter_sub_ = nh_.subscribe(group_name+"/instKine_setter", 1, &MotorMover::instantKineSetterCallback, this);
+    
     // Init class variables
     current_vel_    = 0;
     ctrl_time_      = 1/ctrl_rate_;
+    inst_kine_      = false;
 
     ROS_INFO("%s motor of group %s control sampling time set at %f s",
                 joint_name_.c_str(), group_name_.c_str(), ctrl_time_);
@@ -269,9 +272,19 @@ void MotorMover::publishFakeMove(double current_pos)
     fake_move_pub_.publish(joint_state_msg);
 }
 
+// Set kinematic mode
+void MotorMover::instantKineSetterCallback(const std_msgs::Bool::ConstPtr& msg)
+{
+  inst_kine_ = msg->data;
+}
+
+
 // Spinner ROS + motor update
 void MotorMover::spinner()
 {
-    ros::spinOnce();
-    motorPosUpdate();
+    if (!inst_kine_)
+    {
+        ros::spinOnce();
+        motorPosUpdate();
+    }
 }
