@@ -45,15 +45,15 @@ Gripper::Gripper(std::string node_name)
     check_param();
 
     // Call the motor_mover class
-    gripper_mover_ = new MotorMover(gripper_name_,joint_name_,
+    gripper_mover_ = new MotorMover(group_name_,joint_name_,
                                     joint_limits_,vel_limit_,acc_limit_,
-                                    ctrl_rate_,inst_target_);
+                                    ctrl_rate_,inst_target_,true);
 
     // Declare service open/close gripper
-    gripper_control_srv_ = nh_.advertiseService(gripper_name_+ "/" + joint_name_+
+    gripper_control_srv_ = nh_.advertiseService(group_name_+ "/" + joint_name_+
                         "/move_gripper", &Gripper::moveGripperCallback, this);
     // Declare service grab/detach an object to the gripper
-    gripper_grab_srv_    = nh_.advertiseService(gripper_name_+ "/" + joint_name_+
+    gripper_grab_srv_    = nh_.advertiseService(group_name_+ "/" + joint_name_+
                         "/grabbing_gripper", &Gripper::grabbingGripperCallback, this);
     // Build a subscriber which receives if an object is within ee tips
     objFoundSubscriber_  = nh_.subscribe("/obj_gripper_found", 1, &Gripper::objFoundCallback, this);
@@ -69,7 +69,7 @@ Gripper::~Gripper(){delete gripper_mover_;}
 
 void Gripper::check_param()
 {
-    if (!nh_.getParam(node_name_+"/gripper_name", gripper_name_))
+    if (!nh_.getParam(node_name_+"/group_name", group_name_))
         {
             ROS_ERROR("Gripper name parameter not found");
             ros::shutdown();

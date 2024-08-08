@@ -72,10 +72,6 @@ include_directories(
 link_directories(${catkin_LIBRARY_DIRS})
 
 # LIBRARIES DECLARATIONS
-# motor planner library declaration
-add_library(motor_planner src/motor_planner.cpp)
-target_link_libraries(motor_planner ${catkin_LIBRARIES})
-# add_dependencies(motor_planner ${catkin_EXPORTED_TARGETS})
 
 # motor mover library declaration
 add_library(motor_mover src/motor_mover.cpp)
@@ -87,11 +83,12 @@ add_library(gripper src/gripper.cpp)
 target_link_libraries(gripper ${catkin_LIBRARIES})
 add_dependencies(gripper ${catkin_EXPORTED_TARGETS} motor_mover)
 
-# EXECUTABLES DECLARATIONS
-# motor_planner_node code executable
-add_executable(motor_planner_node src/motor_planner.cpp)
-target_link_libraries(motor_planner_node ${catkin_LIBRARIES})
+# EXECUTABLE DECLARATIONS
 
 # robotiq85_gripper_node code executable
 add_executable(robotiq85_gripper src/robotiq85_gripper_node.cpp)
 target_link_libraries(robotiq85_gripper ${catkin_LIBRARIES} gripper motor_mover)
+
+# motor_node code executable
+add_executable(motor_node src/motor_node.cpp)
+target_link_libraries(motor_node ${catkin_LIBRARIES} motor_mover)

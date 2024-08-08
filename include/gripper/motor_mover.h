@@ -46,13 +46,14 @@
 class MotorMover 
 {
 public:
-    MotorMover( std::string&         motor_name, 
+    MotorMover( std::string&         group_name, 
                 std::string&         joint_name, 
                 std::vector<double>& joint_limits,  
                 double               vel_limit, 
                 double               acc_limit, 
                 double               ctrl_rate,
-                bool                 inst_target);   
+                bool                 inst_target,
+                bool                 gripper);   
                 
     //Set inst_target to true to update setpoint at target instantaneously 
 
@@ -71,26 +72,34 @@ private:
     
     // ROS variables
     ros::NodeHandle nh_;
-    ros::Subscriber gripper_control_sub_;
+    ros::Subscriber motor_control_sub_;
+    ros::Subscriber joint_state_sub_;
     ros::Publisher  fake_move_pub_;
 
     // Class attributes
-    std::string         motor_name_;
+    std::string         group_name_;
     std::string         joint_name_;
     std::vector<double> joint_limits_;
     double              vel_limit_;
     double              acc_limit_;
     double              ctrl_rate_;
     bool                inst_target_;
+    bool                gripper_;
 
     // Class variables 
     double target_pos_;
     double current_pos_;
+    double current_target_;
     double ctrl_time_;
     double current_vel_;
+    bool   first_joint_sub_;
+    int    motor_index_;
     
     // Update current motor position
     void motorPosUpdate(void);
+
+    // Reading joint state
+    void jointStateCallback(const sensor_msgs::JointState::ConstPtr& js);
 
     // Update motor position target pose
     void moveMotorCallback(const std_msgs::Float64::ConstPtr& msg);

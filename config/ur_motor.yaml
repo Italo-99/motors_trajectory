@@ -1,0 +1,16 @@
+## Configuration file used by the gripper mover
+
+group_name:   motor_name
+
+joint_name:   motor_joint
+
+joint_limits: [-6.28, 6.28]  ## rad
+
+vel_limit:    10            ## rad/s -> adviced 0.825
+
+acc_limit:    20            ## rad/s^2
+
+ctrl_rate:    50.0          ## Hz
+
+inst_target:  false         ## set to false if target is reached by 
+                            ## non instantaneous trajectory

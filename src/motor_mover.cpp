@@ -37,34 +37,38 @@
 
 #include "gripper/motor_mover.h"
 
-MotorMover::MotorMover( std::string&         motor_name,
-                        std::string&         joint_name,
-                        std::vector<double>& joint_limits,
-                        double               vel_limit,
-                        double               acc_limit,
-                        double               ctrl_rate,
-                        bool                 inst_target)
-    : nh_("~"), motor_name_(motor_name), joint_name_(joint_name),
-                joint_limits_(joint_limits), vel_limit_(vel_limit),
-                acc_limit_(acc_limit), ctrl_rate_(ctrl_rate),
-                inst_target_(inst_target)
+MotorMover::MotorMover( std::string&                    group_name,
+                        std::string&                    joint_name,
+                        std::vector<double>&            joint_limits,
+                        double                          vel_limit,
+                        double                          acc_limit,
+                        double                          ctrl_rate,
+                        bool                            inst_target,
+                        bool                            gripper):
+                        group_name_(group_name),        joint_name_(joint_name),
+                        joint_limits_(joint_limits),    vel_limit_(vel_limit),
+                        acc_limit_(acc_limit),          ctrl_rate_(ctrl_rate),
+                        inst_target_(inst_target),      gripper_(gripper)
 {
+    // Subscriber to joint state
+    first_joint_sub_ = true;
+    motor_index_     = 0;
+    joint_state_sub_ = nh_.subscribe("joint_states",1, &MotorMover::jointStateCallback, this);
+
     // Subscriber to user commands
-    gripper_control_sub_ = nh_.subscribe(joint_name_+"/gripper_control",
-                            1, &MotorMover::moveMotorCallback, this);
+    motor_control_sub_ = nh_.subscribe(group_name+"/"+joint_name_+"/motor_control",
+                                        1, &MotorMover::moveMotorCallback, this);
 
     // Send command to move group fake controller
     fake_move_pub_       = nh_.advertise<sensor_msgs::JointState>(
                             "/move_group/fake_controller_joint_states", 1);
 
     // Init class variables
-    target_pos_     = 0;
     current_vel_    = 0;
-    current_pos_    = joint_limits_[0];
     ctrl_time_      = 1/ctrl_rate_;
 
-    ROS_INFO("%s motor control sampling time set at %f s",
-                motor_name_.c_str(),ctrl_time_);
+    ROS_INFO("%s motor of group %s control sampling time set at %f s",
+                joint_name_.c_str(), group_name_.c_str(), ctrl_time_);
 }
 
 // MotorMover::~MotorMover()
@@ -72,14 +76,50 @@ MotorMover::MotorMover( std::string&         motor_name,
     //     // Insert destructor
 // }
 
+void MotorMover::jointStateCallback(const sensor_msgs::JointState::ConstPtr& js)
+{
+    if (first_joint_sub_)
+    {
+        // Don't execute this if function next time
+        first_joint_sub_ = false;
+        ROS_INFO("Searching joint << %s >> among active.",joint_name_.c_str());
+
+        for (unsigned int k = 0; k < js->name.size(); k++)
+        {            
+            if (js->name[k] == joint_name_)
+            {
+                ROS_INFO("Joint << %s >> found among active joints.",joint_name_.c_str());
+                motor_index_ = k;
+                current_pos_ = js->position[k];
+                break;
+            }
+            else if (k == js->name.size() - 1)
+            {
+                ROS_INFO("Joint << %s >> found among active joints. Exiting ...",joint_name_.c_str());
+                ros::shutdown();
+            }
+        }
+
+        // Keep the motor stationary at the beginning
+        target_pos_     = current_pos_;
+        current_target_ = target_pos_;
+    }
+    else
+    {
+        current_pos_ = js->position[motor_index_];
+    }
+}
+
 // Update current motor position
 void MotorMover::motorPosUpdate()
 {
     // Check if instantaneous setpoint update mode has been set
     if (inst_target_)
     {
-        current_pos_ = target_pos_;
-        publishFakeMove(current_pos_);
+        // current_pos_ = target_pos_;
+        // publishFakeMove(current_pos_);
+
+        publishFakeMove(target_pos_);
         return;
     }
 
@@ -87,7 +127,7 @@ void MotorMover::motorPosUpdate()
     if ((target_pos_-current_pos_<0.001) && (target_pos_-current_pos_>-0.001))
     {
         current_vel_ = 0;
-        current_pos_ = target_pos_;
+        // current_pos_ = target_pos_;
         return;
     }
 
@@ -97,21 +137,21 @@ void MotorMover::motorPosUpdate()
         // If current pose is near the target (within 5 deg)
         if      (target_pos_ - current_pos_ < 0.087)
         {
-            // Follow current velocity to 30% of its limit
-            if      (current_vel_ < vel_limit_*0.3 - 0.001)
+            // Follow current velocity to 5% of its limit
+            if      (current_vel_ < vel_limit_*0.05 - 0.001)
             {
                 current_vel_ += acc_limit_*ctrl_time_;
-                if (current_vel_ > vel_limit_*0.3)
+                if (current_vel_ > vel_limit_*0.05)
                 {
-                    current_vel_ = vel_limit_*0.3;
+                    current_vel_ = vel_limit_*0.05;
                 }
             }
-            else if (current_vel_ > vel_limit_*0.3 + 0.001)
+            else if (current_vel_ > vel_limit_*0.05 + 0.001)
             {
                 current_vel_ -= acc_limit_*ctrl_time_;
-                if (current_vel_ < vel_limit_*0.3)
+                if (current_vel_ < vel_limit_*0.05)
                 {
-                    current_vel_ = vel_limit_*0.3;
+                    current_vel_ = vel_limit_*0.05;
                 }
             }
         }
@@ -125,8 +165,8 @@ void MotorMover::motorPosUpdate()
             }
         }
         // Update current position
-        current_pos_ += current_vel_*ctrl_time_;
-        if (current_pos_ > target_pos_) {current_pos_ = target_pos_;}
+        current_target_ += current_vel_*ctrl_time_;
+        if (current_target_ > target_pos_) {current_target_ = target_pos_;}
     }
 
     // Else if target pos is smaller than current pos, pos must decrease
@@ -135,21 +175,21 @@ void MotorMover::motorPosUpdate()
         // If current pose is near the target (within 5 deg)
         if      (current_pos_ - target_pos_ < 0.087)
         {
-            // Follow current velocity to 30% of its limit
-            if      (current_vel_ < vel_limit_*0.3 - 0.001)
+            // Follow current velocity to 5% of its limit
+            if      (current_vel_ < vel_limit_*0.05 - 0.001)
             {
                 current_vel_ += acc_limit_*ctrl_time_;
-                if (current_vel_ > vel_limit_*0.3)
+                if (current_vel_ > vel_limit_*0.05)
                 {
-                    current_vel_ = vel_limit_*0.3;
+                    current_vel_ = vel_limit_*0.05;
                 }
             }
-            else if (current_vel_ > vel_limit_*0.3 + 0.001)
+            else if (current_vel_ > vel_limit_*0.05 + 0.001)
             {
                 current_vel_ -= acc_limit_*ctrl_time_;
-                if (current_vel_ < vel_limit_*0.3)
+                if (current_vel_ < vel_limit_*0.05)
                 {
-                    current_vel_ = vel_limit_*0.3;
+                    current_vel_ = vel_limit_*0.05;
                 }
             }
         }
@@ -163,43 +203,60 @@ void MotorMover::motorPosUpdate()
             }
         }
         // Update current position
-        current_pos_ -= current_vel_*ctrl_time_;
-        if (current_pos_ < target_pos_) {current_pos_ = target_pos_;} 
+        current_target_ -= current_vel_*ctrl_time_;
+        if (current_target_ < target_pos_) {current_target_ = target_pos_;} 
     }
 
     // Publish computed current motor pos
-    publishFakeMove(current_pos_);
+    // publishFakeMove(current_pos_);
+
+    publishFakeMove(current_target_);
 }
 
 // Update current target pose (input within [0,100] interval)
 void MotorMover::moveMotorCallback(const std_msgs::Float64::ConstPtr& msg) 
 {
-    setTargetPos(msg->data);  
+    setTargetPos(msg->data);
 }
 
 // Setter of target pose for child class (input within [0,100] interval)
 void MotorMover::setTargetPos(double target_pos)
 {
-    // Remap target_pos to fit within joint limits
-    target_pos = std::max(joint_limits_[0], std::min(joint_limits_[1],
-                 target_pos * (joint_limits_[1] - joint_limits_[0]) / 100.0));
-
-    // Check if target_pos is within joint limits
-    if (target_pos < joint_limits_[0] || target_pos > joint_limits_[1])
+    if (gripper_)
     {
-        ROS_WARN("Target position is out of joint limits!");
-        return;
-    }
+        // Remap target_pos to fit within joint limits
+        target_pos = std::max(joint_limits_[0], std::min(joint_limits_[1],
+                    target_pos * (joint_limits_[1] - joint_limits_[0]) / 100.0));
 
-    // Update target pose
-    target_pos_ = target_pos;
+        // Check if target_pos is within joint limits
+        if (target_pos < joint_limits_[0] || target_pos > joint_limits_[1])
+        {
+            ROS_WARN("Target position is out of joint limits!");
+            return;
+        }
+
+        // Update target pose
+        target_pos_ = target_pos;
+    }
+    else 
+    {
+        // The target pose remains the same as passed
+        target_pos_ = target_pos;
+    }
 }
 
-// Getter of current (setpoint) pose of the gripper (output within [0,100] interval)
+// Getter of current (setpoint) pose of the motor (output within [0,100] interval)
 double MotorMover::getCurrentPos()
 {
-    return (current_pos_-joint_limits_[0])*100.0
-            /(joint_limits_[1]-joint_limits_[0]);
+    if (gripper_)
+    {
+        return (current_pos_-joint_limits_[0])*100.0
+                /(joint_limits_[1]-joint_limits_[0]);
+    }
+    else 
+    {
+        return current_pos_;
+    }
 }
 
 // Fake controller publisher to move group 

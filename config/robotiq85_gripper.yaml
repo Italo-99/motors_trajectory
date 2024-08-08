@@ -1,6 +1,6 @@
 ## Configuration file used by the gripper mover
 
-gripper_name: robotiq85_gripper
+group_name:   robotiq85_gripper
 
 joint_name:   finger_joint
 
@@ -29,9 +29,11 @@ tcp:          140         ## user fixed tcp
                           ## (it compensates object size - gripper strike) 
                           ## 140 real, 140 sim
 
-sim:          true       ## set if gripper has to be used in sim or real mode
+gripper:      true        ## specify if the motor is a gripper
 
-# Use the following command to launch the node with the above params
+sim:          true        ## set if gripper has to be used in sim or real mode
+
+# Use the following command to launch an example gripper node with the above params
 # rosrun robotiq85_gripper robotiq85_gripper gripper_name:="robotiq85_gripper" 
 # joint_name:="finger_joint" joint_limits:=[0.0, 0.725] vel_limit:=0.825 
 # acc_limit:=3.6 ctrl_rate:=10 inst_target:=true tips_strike:=85 

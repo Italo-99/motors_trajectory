@@ -75,7 +75,7 @@ private:
     ros::Publisher attachObjGripperPub_;
 
     // Class attributes
-    std::string         gripper_name_;
+    std::string         group_name_;
     std::string         joint_name_;
     std::vector<double> joint_limits_;
     double              vel_limit_;
