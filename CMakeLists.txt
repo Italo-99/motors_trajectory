@@ -59,7 +59,7 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include srv
-  LIBRARIES motor_planner motor_mover
+  LIBRARIES motor_mover
   ${THIS_PACKAGE_INCLUDE_DIRS}
 )
 
