@@ -96,7 +96,7 @@ private:
     double current_vel_;
     bool   first_joint_sub_;
     int    motor_index_;
-    bool   inst_kine_;
+    bool    inst_kine_;
     
     // Update current motor position
     void motorPosUpdate(void);

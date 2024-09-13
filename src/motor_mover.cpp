@@ -60,10 +60,10 @@ MotorMover::MotorMover( std::string&                    group_name,
                                         1, &MotorMover::moveMotorCallback, this);
 
     // Send command to move group fake controller
-    fake_move_pub_       = nh_.advertise<sensor_msgs::JointState>(
+    fake_move_pub_     = nh_.advertise<sensor_msgs::JointState>(
                             "/move_group/fake_controller_joint_states", 1);
 
-    instKine_setter_sub_ = nh_.subscribe(group_name+"/instKine_setter", 1, &MotorMover::instantKineSetterCallback, this);
+    instKine_setter_sub_ = nh_.subscribe(group_name+"/instKine_setter", 10, &MotorMover::instantKineSetterCallback, this);
     
     // Init class variables
     current_vel_    = 0;
@@ -210,9 +210,7 @@ void MotorMover::motorPosUpdate()
         if (current_target_ < target_pos_) {current_target_ = target_pos_;} 
     }
 
-    // Publish computed current motor pos
-    // publishFakeMove(current_pos_);
-
+    // Publish computed current motor target
     publishFakeMove(current_target_);
 }
 
@@ -278,13 +276,13 @@ void MotorMover::instantKineSetterCallback(const std_msgs::Bool::ConstPtr& msg)
   inst_kine_ = msg->data;
 }
 
-
 // Spinner ROS + motor update
 void MotorMover::spinner()
 {
+    ros::spinOnce();
+
     if (!inst_kine_)
     {
-        ros::spinOnce();
         motorPosUpdate();
     }
 }
