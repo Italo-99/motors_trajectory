@@ -285,4 +285,8 @@ void MotorMover::spinner()
     {
         motorPosUpdate();
     }
+    else
+    {
+        target_pos_ = getCurrentPos();
+    }
 }
