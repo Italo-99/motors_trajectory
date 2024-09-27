@@ -1,47 +1,53 @@
 <!-- Motors trajectory handlers for UR manipulators -->
 <launch>
-  <arg name="group_name"  default="manipulator" />
-  <arg name="inst_target" default="false" />
+  <arg name="group_name"  default="manipulator"         />
+  <arg name="inst_target" default="false"               />
+  <arg name="joint0_name" default="shoulder_pan_joint"  />
+  <arg name="joint1_name" default="shoulder_lift_joint" />
+  <arg name="joint2_name" default="elbow_joint"         />
+  <arg name="joint3_name" default="wrist_1_joint"       />
+  <arg name="joint4_name" default="wrist_2_joint"       />
+  <arg name="joint5_name" default="wrist_3_joint"       />
   <!-- Joint 0 -->
   <node name="ur_motor_0" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name"  value="$(arg group_name)"   />
-    <param name="joint_name"  value="shoulder_pan_joint"  />
+    <param name="joint_name"  value="$(arg joint0_name)"  />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
   <!-- Joint 1 -->
   <node name="ur_motor_1" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name"  value="$(arg group_name)"   />
-    <param name="joint_name"  value="shoulder_lift_joint" />
+    <param name="joint_name"  value="$(arg joint1_name)"  />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
   <!-- Joint 2 -->
   <node name="ur_motor_2" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name"  value="$(arg group_name)"   />
-    <param name="joint_name"  value="elbow_joint"         />
+    <param name="joint_name"  value="$(arg joint2_name)"  />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
   <!-- Joint 3 -->
   <node name="ur_motor_3" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name" value="$(arg group_name)"    />
-    <param name="joint_name" value="wrist_1_joint"        />
+    <param name="joint_name" value="$(arg joint3_name)"   />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
   <!-- Joint 4 -->
   <node name="ur_motor_4" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name" value="$(arg group_name)"    />
-    <param name="joint_name" value="wrist_2_joint"        />
+    <param name="joint_name" value="$(arg joint4_name)"   />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
   <!-- Joint 5 -->
   <node name="ur_motor_5" type="motor_node" pkg="gripper" output="screen">
     <rosparam command="load" file="$(find gripper)/config/ur_motor.yaml"/>
     <param name="group_name" value="$(arg group_name)"    />
-    <param name="joint_name" value="wrist_3_joint"        />
+    <param name="joint_name" value="$(arg joint5_name)"   />
     <param name="inst_target" value="$(arg inst_target)"  />
   </node>
 
