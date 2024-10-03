@@ -69,6 +69,7 @@ MotorMover::MotorMover( std::string&                    group_name,
     current_vel_    = 0;
     ctrl_time_      = 1/ctrl_rate_;
     inst_kine_      = false;
+    target_reached_ = true;
 
     ROS_INFO("%s motor of group %s control sampling time set at %f s",
                 joint_name_.c_str(), group_name_.c_str(), ctrl_time_);
@@ -119,99 +120,103 @@ void MotorMover::motorPosUpdate()
     // Check if instantaneous setpoint update mode has been set
     if (inst_target_)
     {
-        // current_pos_ = target_pos_;
-        // publishFakeMove(current_pos_);
-
-        publishFakeMove(target_pos_);
+        current_target_ = target_pos_;
+        current_vel_    = 0;
+        publishFakeMove(target_pos_,current_vel_);
+        target_reached_ = true;
         return;
     }
 
     // Check if target position has been reached, exit from the function
-    if ((target_pos_-current_pos_<0.001) && (target_pos_-current_pos_>-0.001))
+    if ((target_pos_-current_pos_<0.001) && (target_pos_-current_pos_>-0.001) && (target_reached_ == false))
     {
-        current_vel_ = 0;
-        // current_pos_ = target_pos_;
+        current_vel_ = 0.;
+        target_reached_ = true;
+        publishFakeMove(current_target_,current_vel_);
         return;
     }
 
-    // If target pos is greater than current pos, pos must increase
-    if (target_pos_ > current_pos_)
+    if (!target_reached_)
     {
-        // If current pose is near the target (within 5 deg)
-        if      (target_pos_ - current_pos_ < 0.087)
+        // If target pos is greater than current pos, pos must increase
+        if (target_pos_ > current_pos_)
         {
-            // Follow current velocity to 5% of its limit
-            if      (current_vel_ < vel_limit_*0.05 - 0.001)
+            // If current pose is near the target (within 5 deg)
+            if      (target_pos_ - current_pos_ < 0.087)
+            {
+                // Follow current velocity to 5% of its limit
+                if      (current_vel_ < vel_limit_*0.05 - 0.001)
+                {
+                    current_vel_ += acc_limit_*ctrl_time_;
+                    if (current_vel_ > vel_limit_*0.05)
+                    {
+                        current_vel_ = vel_limit_*0.05;
+                    }
+                }
+                else if (current_vel_ > vel_limit_*0.05 + 0.001)
+                {
+                    current_vel_ -= acc_limit_*ctrl_time_;
+                    if (current_vel_ < vel_limit_*0.05)
+                    {
+                        current_vel_ = vel_limit_*0.05;
+                    }
+                }
+            }
+            // Increase current speed up to the limit
+            else if (current_vel_ < vel_limit_ - 0.001)
             {
                 current_vel_ += acc_limit_*ctrl_time_;
-                if (current_vel_ > vel_limit_*0.05)
+                if (current_vel_ > vel_limit_)
                 {
-                    current_vel_ = vel_limit_*0.05;
+                    current_vel_ = vel_limit_;
                 }
             }
-            else if (current_vel_ > vel_limit_*0.05 + 0.001)
-            {
-                current_vel_ -= acc_limit_*ctrl_time_;
-                if (current_vel_ < vel_limit_*0.05)
-                {
-                    current_vel_ = vel_limit_*0.05;
-                }
-            }
+            // Update current position
+            current_target_ += current_vel_*ctrl_time_;
+            if (current_target_ > target_pos_) {current_target_ = target_pos_;}
         }
-        // Increase current speed up to the limit
-        else if (current_vel_ < vel_limit_ - 0.001)
-        {
-            current_vel_ += acc_limit_*ctrl_time_;
-            if (current_vel_ > vel_limit_)
-            {
-                current_vel_ = vel_limit_;
-            }
-        }
-        // Update current position
-        current_target_ += current_vel_*ctrl_time_;
-        if (current_target_ > target_pos_) {current_target_ = target_pos_;}
-    }
 
-    // Else if target pos is smaller than current pos, pos must decrease
-    else
-    {
-        // If current pose is near the target (within 5 deg)
-        if      (current_pos_ - target_pos_ < 0.087)
+        // Else if target pos is smaller than current pos, pos must decrease
+        else
         {
-            // Follow current velocity to 5% of its limit
-            if      (current_vel_ < vel_limit_*0.05 - 0.001)
+            // If current pose is near the target (within 5 deg)
+            if      (current_pos_ - target_pos_ < 0.087)
+            {
+                // Follow current velocity to 5% of its limit
+                if      (current_vel_ < vel_limit_*0.05 - 0.001)
+                {
+                    current_vel_ += acc_limit_*ctrl_time_;
+                    if (current_vel_ > vel_limit_*0.05)
+                    {
+                        current_vel_ = vel_limit_*0.05;
+                    }
+                }
+                else if (current_vel_ > vel_limit_*0.05 + 0.001)
+                {
+                    current_vel_ -= acc_limit_*ctrl_time_;
+                    if (current_vel_ < vel_limit_*0.05)
+                    {
+                        current_vel_ = vel_limit_*0.05;
+                    }
+                }
+            }
+            // Increase current speed up to the limit
+            else if (current_vel_ < vel_limit_ - 0.001)
             {
                 current_vel_ += acc_limit_*ctrl_time_;
-                if (current_vel_ > vel_limit_*0.05)
+                if (current_vel_ > vel_limit_)
                 {
-                    current_vel_ = vel_limit_*0.05;
+                    current_vel_ = vel_limit_;
                 }
             }
-            else if (current_vel_ > vel_limit_*0.05 + 0.001)
-            {
-                current_vel_ -= acc_limit_*ctrl_time_;
-                if (current_vel_ < vel_limit_*0.05)
-                {
-                    current_vel_ = vel_limit_*0.05;
-                }
-            }
+            // Update current position
+            current_target_ -= current_vel_*ctrl_time_;
+            if (current_target_ < target_pos_) {current_target_ = target_pos_;} 
         }
-        // Increase current speed up to the limit
-        else if (current_vel_ < vel_limit_ - 0.001)
-        {
-            current_vel_ += acc_limit_*ctrl_time_;
-            if (current_vel_ > vel_limit_)
-            {
-                current_vel_ = vel_limit_;
-            }
-        }
-        // Update current position
-        current_target_ -= current_vel_*ctrl_time_;
-        if (current_target_ < target_pos_) {current_target_ = target_pos_;} 
-    }
 
-    // Publish computed current motor target
-    publishFakeMove(current_target_);
+        // Publish computed current motor target
+        publishFakeMove(current_target_,current_vel_);  
+    }
 }
 
 // Update current target pose (input within [0,100] interval)
@@ -243,6 +248,11 @@ void MotorMover::setTargetPos(double target_pos)
     {
         // The target pose remains the same as passed
         target_pos_ = target_pos;
+
+        if ((target_pos_-current_pos_>0.001) || (target_pos_-current_pos_<-0.001))
+        {
+            target_reached_ = false;
+        }
     }
 }
 
@@ -261,12 +271,13 @@ double MotorMover::getCurrentPos()
 }
 
 // Fake controller publisher to move group 
-void MotorMover::publishFakeMove(double current_pos)
+void MotorMover::publishFakeMove(double current_pos,double current_vel)
 {
     sensor_msgs::JointState joint_state_msg;
     joint_state_msg.header.stamp = ros::Time::now();
     joint_state_msg.name.push_back(joint_name_);
     joint_state_msg.position.push_back(current_pos);
+    joint_state_msg.velocity.push_back(current_vel);
     fake_move_pub_.publish(joint_state_msg);
 }
 
@@ -274,6 +285,8 @@ void MotorMover::publishFakeMove(double current_pos)
 void MotorMover::instantKineSetterCallback(const std_msgs::Bool::ConstPtr& msg)
 {
   inst_kine_ = msg->data;
+  current_vel_ = 0;
+  setTargetPos(current_pos_);
 }
 
 // Spinner ROS + motor update

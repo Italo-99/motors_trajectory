@@ -96,7 +96,8 @@ private:
     double current_vel_;
     bool   first_joint_sub_;
     int    motor_index_;
-    bool    inst_kine_;
+    bool   inst_kine_;
+    bool   target_reached_;
     
     // Update current motor position
     void motorPosUpdate(void);
@@ -108,7 +109,7 @@ private:
     void moveMotorCallback(const std_msgs::Float64::ConstPtr& msg);
 
     // Motor moving function through move group fake controller
-    void publishFakeMove(double target_pos);
+    void publishFakeMove(double target_pos, double current_vel);
 
     // Instantaneous kine mode callback
     void instantKineSetterCallback(const std_msgs::Bool::ConstPtr& msg);
