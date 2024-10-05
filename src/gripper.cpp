@@ -31,7 +31,7 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- *  Author: [Andrea Pupa] [Italo Almirante]
+ *  Author: [Italo Almirante]
  *  Created on: [2024-01-17]
 */
 
