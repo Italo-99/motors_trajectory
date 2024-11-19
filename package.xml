@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 
 <package format="3">
-  <name>gripper</name>
+  <name>motors_trajectory</name>
   <version>1.2.4</version>
-  <description> Pkg container of useful ROS1 files to handle grippers</description>
+  <description> Pkg container of useful ROS1 files to handle motors trajectories and grippers</description>
   <maintainer email="italo.almirante@unimore.it">Italo Almirante</maintainer>
   <license>Apache License 2.0</license>
 
