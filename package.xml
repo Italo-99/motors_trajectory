@@ -1,31 +1,24 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-
 <package format="3">
   <name>motors_trajectory</name>
-  <version>1.2.4</version>
-  <description> Pkg container of useful ROS1 files to handle motors trajectories and grippers</description>
-  <maintainer email="italo.almirante@unimore.it">Italo Almirante</maintainer>
-  <license>Apache License 2.0</license>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="matteo.bicchi2005@gmail.com">matteo</maintainer>
+  <license>Apache-2.0</license>
 
-  <url>http://ros.org/wiki/foo_core</url>
-  <author>Italo Almirante</author>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
+  <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>pluginlib</depend>
-  <depend>moveit_core</depend>
-  <depend>moveit_commander</depend>
-  <depend>moveit_fake_controller_manager</depend>
-  <depend>moveit_ros_planning_interface</depend>
-  <depend>moveit_ros_perception</depend>
-  <depend>moveit_visual_tools</depend>
 
-  <exec_depend>message_runtime</exec_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
