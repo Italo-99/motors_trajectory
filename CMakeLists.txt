@@ -5,10 +5,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+include_directories(include)
+install(
+    DIRECTORY include/ 
+    DESTINATION include
+)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 if(BUILD_TESTING)
@@ -25,6 +32,20 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
     "srv/RobotiQGripperControl.srv" 
+)
+
+
+add_executable(motor_mover_node src/motor_mover_node.cpp src/motor.cpp)
+
+ament_target_dependencies(motor_mover_node
+    rclcpp
+    sensor_msgs
+    std_msgs
+)
+
+install(
+    TARGETS motor_mover_node
+    DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
