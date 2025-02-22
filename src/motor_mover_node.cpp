@@ -3,7 +3,7 @@
 int main(int argc, char* argv[]) {
     
     MotorParams params;
-    params.group_name = "manipulator";
+    params.group_name = "robotiq_85_gripper";
     params.joint_name = "robotiq_85_left_knuckle_joint";
     params.upper_limit = 0.8;
     params.lower_limit = 0.0;

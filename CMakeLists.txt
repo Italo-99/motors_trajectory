@@ -31,7 +31,8 @@ if(BUILD_TESTING)
 endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-    "srv/RobotiQGripperControl.srv" 
+    "srv/RobotiQGripperControl.srv"
+    "srv/MotorParams.srv"
 )
 
 
@@ -47,5 +48,10 @@ install(
     TARGETS motor_mover_node
     DESTINATION lib/${PROJECT_NAME}
 )
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+target_link_libraries(motor_mover_node "${cpp_typesupport_target}")
 
 ament_package()

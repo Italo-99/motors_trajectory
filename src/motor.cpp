@@ -5,10 +5,23 @@ MotorMover::MotorMover(MotorParams& params)
                        params_(params),
                        current_vel_(0),
                        ctrl_time_(1/params_.ctrl_rate),
+                       motor_index_(-1),
                        target_reached_(true)
 {
+    declareParameters();
+
+    params_.group_name =        this->get_parameter("group_name").as_string();
+    params_.joint_name =        this->get_parameter("joint_name").as_string();
+    params_.upper_limit =       this->get_parameter("upper_limit").as_double();
+    params_.lower_limit =       this->get_parameter("lower_limit").as_double();
+    params_.vel_limit =         this->get_parameter("vel_limit").as_double();
+    params_.acc_limit =         this->get_parameter("acc_limit").as_double();
+    params_.ctrl_rate =         this->get_parameter("ctrl_rate").as_int();
+    params_.tolerance =         this->get_parameter("tolerance").as_double();
+    params_.min_vel =           this->get_parameter("min_vel").as_double();
+    params_.min_vel_region =    this->get_parameter("min_vel_region").as_double();
+
     // Subscriber to joint state
-    motor_index_     = -1;
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
         "/joint_states", 1, 
         [this](const sensor_msgs::msg::JointState::SharedPtr js) {
@@ -27,6 +40,14 @@ MotorMover::MotorMover(MotorParams& params)
     // Send command to move group fake controller
     fake_move_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(
         "move_group/fake_controller_joint_states", 1
+    );
+
+    change_params_srv_ = this->create_service<motors_trajectory::srv::MotorParams>(
+        params_.joint_name + "/change_motor_params",
+        [this](const std::shared_ptr<motors_trajectory::srv::MotorParams::Request> request,
+               std::shared_ptr<motors_trajectory::srv::MotorParams::Response> response) {
+            motorParamsCallback(request, response);
+        }
     );
 
 
@@ -67,6 +88,23 @@ void MotorMover::jointStateCallback(const sensor_msgs::msg::JointState::SharedPt
         current_pos_ = js->position[motor_index_];
         current_vel_ = target_vel_; //Use the last computed velocity as current velocity
     }
+}
+
+void MotorMover::motorParamsCallback(const motors_trajectory::srv::MotorParams::Request::SharedPtr request,
+                                     motors_trajectory::srv::MotorParams::Response::SharedPtr response)
+{
+    params_.lower_limit = request->lower_limit;
+    params_.upper_limit = request->upper_limit;
+    params_.vel_limit = request->vel_limit;
+    params_.acc_limit = request->acc_limit;
+    params_.ctrl_rate = request->ctrl_rate;
+    params_.tolerance = request->tolerance;
+    params_.min_vel = request->min_vel;
+    params_.min_vel_region = request->min_vel_region;
+
+    ctrl_time_ = 1/params_.ctrl_rate;
+    
+    response->success = true;
 }
 
 // Update current motor position
@@ -171,19 +209,24 @@ void MotorMover::setTargetPos(double target_pos)
     min_vel_distance_ = abs(target_pos_ - current_pos_) * params_.min_vel_region;
 }
 
+void MotorMover::setTargetPosPercentage(double perc)
+{
+    setTargetPos(params_.lower_limit + perc / 100.0 * (params_.upper_limit - params_.lower_limit));
+}
+
 // Getter of current position of the motor
-double MotorMover::getCurrentPos()
+double MotorMover::getCurrentPos() const
 {
     return current_pos_;
 }
 
 //Getter of current setpoint of the motor
-double MotorMover::getTargetPos()
+double MotorMover::getTargetPos() const
 {
     return target_pos_;
 }
 
-bool MotorMover::targetReached()
+bool MotorMover::targetReached() const
 {
     return target_reached_;
 }
@@ -196,6 +239,13 @@ void MotorMover::stop()
 // Fake controller publisher to move group 
 void MotorMover::publishFakeMove(double current_pos,double current_vel)
 {
+    if (current_pos < params_.lower_limit) {
+        current_pos = params_.lower_limit;
+    }
+    else if (current_pos > params_.upper_limit) {
+        current_pos = params_.upper_limit;
+    }
+
     sensor_msgs::msg::JointState joint_state_msg;
 
     joint_state_msg.header.stamp = this->now();
@@ -205,18 +255,37 @@ void MotorMover::publishFakeMove(double current_pos,double current_vel)
     fake_move_pub_->publish(joint_state_msg);
 }
 
+void MotorMover::declareParameters()
+{
+    this->declare_parameter("group_name", params_.group_name);
+    this->declare_parameter("joint_name", params_.joint_name);
+    this->declare_parameter("upper_limit", params_.upper_limit);
+    this->declare_parameter("lower_limit", params_.lower_limit);
+    this->declare_parameter("vel_limit", params_.vel_limit);
+    this->declare_parameter("acc_limit", params_.acc_limit);
+    this->declare_parameter("ctrl_rate", params_.ctrl_rate);
+    this->declare_parameter("tolerance", params_.tolerance);
+    this->declare_parameter("min_vel", params_.min_vel);
+    this->declare_parameter("min_vel_region", params_.min_vel_region);
+}
+
 // Spinner ROS + motor update
 void MotorMover::spinner()
 {
     rclcpp::Rate loop_rate(params_.ctrl_rate);
     while (rclcpp::ok())
     {
-        motorPosUpdate();
-        rclcpp::spin_some(shared_from_this());
+        spinOnce();
         loop_rate.sleep();
     }
 }
 
-double MotorMover::getDistance(){
+void MotorMover::spinOnce()
+{
+    motorPosUpdate();
+    rclcpp::spin_some(shared_from_this());
+}
+
+double MotorMover::getDistance() const {
     return abs(target_pos_ - current_pos_);
 }

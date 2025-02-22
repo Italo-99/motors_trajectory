@@ -1,0 +1,12 @@
+float64     upper_limit
+float64     lower_limit
+float64     vel_limit
+float64     acc_limit
+int64       ctrl_rate
+float64     tolerance
+float64     min_vel
+float64     min_vel_region
+
+---
+
+bool success
