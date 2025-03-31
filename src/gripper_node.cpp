@@ -1,4 +1,4 @@
-#include "motors_trajectory/Motor.h"
+#include "motors_trajectory/Gripper.h"
 
 int main(int argc, char* argv[]) {
     
@@ -12,12 +12,11 @@ int main(int argc, char* argv[]) {
     params.ctrl_rate = 500;
     params.min_vel = 0.1;
     params.min_vel_region = 0.02;
-    params.tolerance = 0.001;
     
     rclcpp::init(argc, argv);
 
-    std::shared_ptr<MotorMover> motor_mover = std::make_shared<MotorMover>(params);
-    motor_mover->spinner();
+    std::shared_ptr<Gripper> gripper_controller = std::make_shared<Gripper>(params, "robotiq_85_gripper_node");
+    gripper_controller->gripperSpinner();
 
     rclcpp::shutdown();
 

@@ -44,11 +44,11 @@ class MotorMover : public rclcpp::Node
         //True if current pos is within tolerance of target pos
         bool targetReached() const; 
 
-    private:
+        void motorPosUpdate(); //Update the motor position and velocity based on the current target and status
+    
+        private:
 
         void declareParameters(); //Declare the parameters of the motor
-
-        void motorPosUpdate(); //Update the motor position and velocity based on the current target and status
         
         void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr& js);
         void publishFakeMove(double current_pos, double current_vel);
@@ -77,6 +77,9 @@ class MotorMover : public rclcpp::Node
         bool   st_joint_sub_;
         int    motor_index_; // Index of the motor in the joint state message, -1 if waiting for initial joint state
         bool   target_reached_;
+
+        rclcpp::TimerBase::SharedPtr mainloop_timer_; //Timer to call the motorPosUpdate function at a fixed rate
+        rclcpp::executors::SingleThreadedExecutor executor_; //Executor to run the node
 
         double getDistance() const; //Get absolute distance between current and target position
 };

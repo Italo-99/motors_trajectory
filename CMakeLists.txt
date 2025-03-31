@@ -15,6 +15,7 @@ install(
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
@@ -35,7 +36,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     "srv/MotorParams.srv"
 )
 
-
 add_executable(motor_mover_node src/motor_mover_node.cpp src/motor.cpp)
 
 ament_target_dependencies(motor_mover_node
@@ -49,9 +49,24 @@ install(
     DESTINATION lib/${PROJECT_NAME}
 )
 
+add_executable(robotiq_85_gripper_node src/gripper_node.cpp src/gripper.cpp src/motor.cpp)
+
+ament_target_dependencies(robotiq_85_gripper_node
+    rclcpp
+    sensor_msgs
+    std_msgs
+    std_srvs
+)
+
+install(
+    TARGETS robotiq_85_gripper_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+
 rosidl_get_typesupport_target(cpp_typesupport_target
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 target_link_libraries(motor_mover_node "${cpp_typesupport_target}")
+target_link_libraries(robotiq_85_gripper_node "${cpp_typesupport_target}")
 
 ament_package()

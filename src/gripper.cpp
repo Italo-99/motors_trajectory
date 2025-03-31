@@ -1,14 +1,18 @@
 #include "motors_trajectory/Gripper.h"
 
-Gripper::Gripper(std::string node_name) : rclcpp::Node(node_name), node_name_(node_name)
+Gripper::Gripper(MotorParams params, std::string node_name) : rclcpp::Node(node_name), node_name_(node_name), params_(params)
 {    
     declareParameters();
+
+    joint_name_ = this->get_parameter("joint_name").as_string();
+    group_name_ = this->get_parameter("group_name").as_string();
+    ctrl_rate_ = this->get_parameter("ctrl_rate").as_int();
 
     sim_ = this->get_parameter("sim").as_bool();
 
     // Declare service open/close gripper
     gripper_control_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        group_name_ + "/" + joint_name_ + "/move_gripper",
+        group_name_ + "/move_gripper",
         [this](const std_srvs::srv::SetBool::Request::SharedPtr req,
                std_srvs::srv::SetBool::Response::SharedPtr res) {
             moveGripperCallback(req, res);
@@ -17,7 +21,7 @@ Gripper::Gripper(std::string node_name) : rclcpp::Node(node_name), node_name_(no
 
     // Declare service grab/detach an object to the gripper
     gripper_grab_srv_ = this->create_service<std_srvs::srv::SetBool>(
-        group_name_ + "/" + joint_name_ + "/grabbing_gripper",
+        group_name_ + "/grabbing_gripper",
         [this](const std_srvs::srv::SetBool::Request::SharedPtr req,
                std_srvs::srv::SetBool::Response::SharedPtr res) {
             grabbingGripperCallback(req, res);
@@ -40,15 +44,16 @@ Gripper::Gripper(std::string node_name) : rclcpp::Node(node_name), node_name_(no
     obj_gripper_found_  = false;
 }
 
-Gripper::~Gripper(){delete gripper_mover_;}
+Gripper::~Gripper(){gripper_mover_.reset();}
 
-void Gripper::moveGripperCallback(const std_srvs::srv::SetBool::Request::SharedPtr& req,
+bool Gripper::moveGripperCallback(const std_srvs::srv::SetBool::Request::SharedPtr& req,
                                   std_srvs::srv::SetBool::Response::SharedPtr& res)
 {
     double target_pos = req->data ? 100. : 0.;
     gripper_mover_->setTargetPosPercentage(target_pos);
     res->success = true;
     res->message = req->data ? "Gripper closed" : "Gripper opened";
+    return true;
 }
 
 bool Gripper::grabbingGripperCallback(const std_srvs::srv::SetBool::Request::SharedPtr& req,
@@ -103,19 +108,19 @@ void Gripper::declareParameters(){
     this->declare_parameter("sim", true);
 
     //Motor params
-    this->declare_parameter("group_name", "");
-    this->declare_parameter("joint_name", "");
-    this->declare_parameter("upper_limit", 6.28);
-    this->declare_parameter("lower_limit", -6.28);
-    this->declare_parameter("vel_limit", 1.0);
-    this->declare_parameter("acc_limit", 1.0);
-    this->declare_parameter("ctrl_rate", 500);
-    this->declare_parameter("tolerance", 0.001);
-    this->declare_parameter("min_vel", 0.0);
-    this->declare_parameter("min_vel_region", 0.0);
+    this->declare_parameter("group_name", params_.group_name);
+    this->declare_parameter("joint_name", params_.joint_name);
+    this->declare_parameter("upper_limit", params_.upper_limit);
+    this->declare_parameter("lower_limit", params_.lower_limit);
+    this->declare_parameter("vel_limit", params_.vel_limit);
+    this->declare_parameter("acc_limit", params_.acc_limit);
+    this->declare_parameter("ctrl_rate", params_.ctrl_rate);
+    this->declare_parameter("tolerance", params_.tolerance);
+    this->declare_parameter("min_vel", params_.min_vel);
+    this->declare_parameter("min_vel_region", params_.min_vel_region);
 }
 
-MotorParams getMotorParams(){
+MotorParams Gripper::getMotorParams(){
     MotorParams params;
     params.group_name =        this->get_parameter("group_name").as_string();
     params.joint_name =        this->get_parameter("joint_name").as_string();
@@ -136,13 +141,19 @@ void Gripper::gripperSpinner()
     rclcpp::Rate rate(ctrl_rate_);
 
     MotorParams params = getMotorParams();
+    RCLCPP_INFO(this->get_logger(), "Gripper node initialized for joint: %s", params.joint_name.c_str());
     gripper_mover_ = std::make_shared<MotorMover>(params);
 
-    // ROS spinner
-    while (rclcpp::ok())
-    {
-        gripper_mover_->spinOnce();
-        rclcpp::spin_some(shared_from_this());
-        rate.sleep();
-    }
+    mainloop_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(static_cast<int>(1./ctrl_rate_ * 1000)),
+        [this]() {
+            gripper_mover_->motorPosUpdate();
+        }
+    );
+
+
+    executor_.add_node(this->get_node_base_interface());
+    executor_.add_node(gripper_mover_->get_node_base_interface());
+    
+    executor_.spin();
 }

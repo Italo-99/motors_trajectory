@@ -5,10 +5,10 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_msgs/msg/bool.hpp"
 
-class Gripper : rclcpp::Node
+class Gripper : public rclcpp::Node
 {
 public:
-    Gripper(std::string node_name);
+    Gripper(MotorParams params, std::string node_name);
     ~Gripper();
 
     // ROS spinner + update gripper position
@@ -22,7 +22,7 @@ private:
                              std_srvs::srv::SetBool::Response::SharedPtr& res);
 
     // Grab/detach gripper service
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr grabbing_gripper_srv_;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr gripper_grab_srv_;
     bool grabbingGripperCallback(const std_srvs::srv::SetBool::Request::SharedPtr&  req,
                                  std_srvs::srv::SetBool::Response::SharedPtr& res);
 
@@ -48,6 +48,11 @@ private:
 
     std::shared_ptr<MotorMover> gripper_mover_;
     std::string                 node_name_;
+
+    rclcpp::TimerBase::SharedPtr mainloop_timer_;
+    rclcpp::executors::SingleThreadedExecutor executor_;
+
+    MotorParams params_;
 
     void declareParameters();
     MotorParams getMotorParams();

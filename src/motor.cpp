@@ -4,7 +4,6 @@ MotorMover::MotorMover(MotorParams& params)
                        : rclcpp::Node(params_.joint_name + "_motor_mover"),
                        params_(params),
                        current_vel_(0),
-                       ctrl_time_(1/params_.ctrl_rate),
                        motor_index_(-1),
                        target_reached_(true)
 {
@@ -20,6 +19,8 @@ MotorMover::MotorMover(MotorParams& params)
     params_.tolerance =         this->get_parameter("tolerance").as_double();
     params_.min_vel =           this->get_parameter("min_vel").as_double();
     params_.min_vel_region =    this->get_parameter("min_vel_region").as_double();
+
+    ctrl_time_ = 1.0 / params_.ctrl_rate;
 
     // Subscriber to joint state
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -85,7 +86,7 @@ void MotorMover::jointStateCallback(const sensor_msgs::msg::JointState::SharedPt
     }
     else
     {
-        current_pos_ = js->position[motor_index_];
+        current_pos_ = current_target_;
         current_vel_ = target_vel_; //Use the last computed velocity as current velocity
     }
 }
@@ -135,7 +136,7 @@ void MotorMover::motorPosUpdate()
 
         if (getDistance() < (pow(params_.vel_limit, 2) - pow(params_.min_vel, 2)) / (2 * params_.acc_limit) + min_vel_distance_) //If withing breaking distance of target
         {
-            RCLCPP_INFO_ONCE(get_logger(), "Br: %f, D: %f", (pow(params_.vel_limit, 2) - pow(params_.min_vel, 2)) / (2 * params_.acc_limit), min_vel_distance_);
+            //Proceed at minimum velocity
             if (abs(current_vel_) > params_.min_vel) //If velocity is above minimum
             {
                 target_vel_ = current_vel_ - sign * params_.acc_limit * ctrl_time_;  //Decrease velocity
@@ -272,18 +273,16 @@ void MotorMover::declareParameters()
 // Spinner ROS + motor update
 void MotorMover::spinner()
 {
-    rclcpp::Rate loop_rate(params_.ctrl_rate);
-    while (rclcpp::ok())
-    {
-        spinOnce();
-        loop_rate.sleep();
-    }
-}
+    executor_.add_node(get_node_base_interface());
 
-void MotorMover::spinOnce()
-{
-    motorPosUpdate();
-    rclcpp::spin_some(shared_from_this());
+    mainloop_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(static_cast<int>(ctrl_time_ * 1000)),
+        [this]() {
+            motorPosUpdate();
+        }
+    );
+
+    executor_.spin();
 }
 
 double MotorMover::getDistance() const {
