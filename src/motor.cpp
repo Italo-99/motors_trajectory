@@ -1,7 +1,7 @@
 #include "motors_trajectory/Motor.h"
 
 MotorMover::MotorMover(MotorParams& params) 
-                       : rclcpp::Node(params_.joint_name + "_motor_mover"),
+                       : rclcpp::Node(params.joint_name + "_motor_mover"),
                        params_(params),
                        current_vel_(0),
                        motor_index_(-1),
