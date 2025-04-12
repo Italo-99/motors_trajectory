@@ -113,10 +113,11 @@ void MotorMover::motorPosUpdate()
 {
     if (target_reached_)
     {
+        target_reached_ = (getDistance() < params_.tolerance);
         //Check we are still at the target position
-        target_reached_ = getDistance() < params_.tolerance;
         return;
     }
+
 
     if (getDistance() < params_.tolerance)
     {
