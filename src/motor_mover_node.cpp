@@ -4,7 +4,7 @@ int main(int argc, char* argv[]) {
     
     MotorParams params;
     params.group_name = "gripper";
-    params.joint_name = "griper_joint";
+    params.joint_name = "gripper_joint";
     params.upper_limit = 0.8;
     params.lower_limit = 0.0;
     params.vel_limit = 1.0;

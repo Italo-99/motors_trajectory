@@ -32,7 +32,7 @@ MotorMover::MotorMover(MotorParams& params)
 
     // Subscriber to user commands
     motor_control_sub_ = this->create_subscription<std_msgs::msg::Float64>(
-        params_.group_name + "/motor_control", 1, 
+        params_.joint_name + "/motor_control", 1, 
         [this](const std_msgs::msg::Float64::SharedPtr msg) {
             moveMotorCallback(msg);
         }
