@@ -16,7 +16,8 @@ struct MotorParams {
     int             ctrl_rate =      500;        //Frequency of the control loop (Hz)
     double          tolerance =      0.001;      //Tolerance for setpoint reached
     double          min_vel =        0.1;        //Minimum velocity to be achieved during motion
-    double          min_vel_region = 0.0;       //Percentage of path where the motor will proceed at min vel until it reaches the target
+    double          min_vel_region = 0.0;        //Percentage of path where the motor will proceed at min vel until it reaches the target
+    bool            use_percentage = false;      //If true, the target position is expressed as a percentage of the joint range (0-100)
 };
 
 class MotorMover : public rclcpp::Node

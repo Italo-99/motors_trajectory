@@ -12,6 +12,7 @@ The MotorParams struct holds all the parameters for the MotorMover class:
  - `min_vel_region`: With this value it is possible to specify a percentage of the path before reaching the target position that will be executed at minimum velocity.
  - `tolerance`: distance within which the target position is considered reached.
  - `ctrl_rate`: frequency at which the controller will publish positions and velocities for the motor (Hz).
+ - `use_percentage` : if true the gripper position received through commands will be expressed as a percentage of the motion range. 
 
 Here are some examples of how changing vel_limit, acc_limit, min_vel and min_vel_region will affect motion, all tests are performed with fake controller and 500Hz ctrl_rate:
 

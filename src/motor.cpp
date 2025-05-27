@@ -19,6 +19,7 @@ MotorMover::MotorMover(MotorParams& params)
     params_.tolerance =         this->get_parameter("tolerance").as_double();
     params_.min_vel =           this->get_parameter("min_vel").as_double();
     params_.min_vel_region =    this->get_parameter("min_vel_region").as_double();
+    params_.use_percentage =    this->get_parameter("use_percentage").as_bool();
 
     ctrl_time_ = 1.0 / params_.ctrl_rate;
 
@@ -102,6 +103,7 @@ void MotorMover::motorParamsCallback(const motors_trajectory::srv::MotorParams::
     params_.tolerance = request->tolerance;
     params_.min_vel = request->min_vel;
     params_.min_vel_region = request->min_vel_region;
+    params_.use_percentage = request->use_percentage;
 
     ctrl_time_ = 1/params_.ctrl_rate;
     
@@ -191,7 +193,11 @@ void MotorMover::motorPosUpdate()
 void MotorMover::moveMotorCallback(const std_msgs::msg::Float64::SharedPtr& msg) 
 {
     RCLCPP_INFO(get_logger(), "Received new target position: %f", msg->data);
-    setTargetPos(msg->data);
+    if (params_.use_percentage) {
+        setTargetPosPercentage(msg->data);
+    } else {
+        setTargetPos(msg->data);
+    }
 }
 
 // Setter of target pose for child class
@@ -269,6 +275,7 @@ void MotorMover::declareParameters()
     this->declare_parameter("tolerance", params_.tolerance);
     this->declare_parameter("min_vel", params_.min_vel);
     this->declare_parameter("min_vel_region", params_.min_vel_region);
+    this->declare_parameter("use_percentage", params_.use_percentage);
 }
 
 // Spinner ROS + motor update
